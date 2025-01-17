@@ -10,20 +10,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'FBLA Application',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Home(title: 'Flutter Demo Home Page'),
+      home: const Home(),
     );
   }
 }
 
 class Home extends StatefulWidget {
-  const Home({super.key, required this.title});
-
-  final String title;
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -33,7 +31,10 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
+      body: 
+        Center (
+          child: Image.network("https://i.kym-cdn.com/entries/icons/mobile/000/032/632/No_No_He's_Got_A_Point_Banner.jpg")
+        )
     );
   }
 }
