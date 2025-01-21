@@ -58,14 +58,15 @@ class DefaultFirebaseOptions {
     storageBucket: 'fbla-app-fda42.firebasestorage.app',
   );
 
-  // static const FirebaseOptions ios = FirebaseOptions(
-  //   apiKey: 'AIzaSyAAZdJ5RhWAj_KvDikFXX52swrrbFmbo-E',
-  //   appId: '1:130467636176:ios:b8e403331f5d0b66a1cfd5',
-  //   messagingSenderId: '130467636176',
-  //   projectId: 'fbla-app-fda42',
-  //   storageBucket: 'fbla-app-fda42.firebasestorage.app',
-  //   iosBundleId: 'com.example.fblaApplication',
-  // );
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAAZdJ5RhWAj_KvDikFXX52swrrbFmbo-E',
+    appId: '1:130467636176:ios:b8e403331f5d0b66a1cfd5',
+    messagingSenderId: '130467636176',
+    projectId: 'fbla-app-fda42',
+    storageBucket: 'fbla-app-fda42.firebasestorage.app',
+    iosClientId: '130467636176-6fpkfpt6dv07kqgti69cjvl887lkjj00.apps.googleusercontent.com',
+    iosBundleId: 'com.example.fblaApplication',
+  );
 
   // static const FirebaseOptions macos = FirebaseOptions(
   //   apiKey: 'AIzaSyAAZdJ5RhWAj_KvDikFXX52swrrbFmbo-E',
