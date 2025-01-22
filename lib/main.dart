@@ -34,7 +34,7 @@ class FBLAApp extends StatelessWidget {
       Constants.signInRoute: (context) =>
           AuthScreens.buildSignInScreen(context),
       Constants.homeRoute: (context) => const Home(),
-      Constants.profileRoute: (context) => const ProfileScreen(),
+      Constants.profileRoute: (context) => AuthScreens.buildProfileScreen(context),
     };
   }
 }

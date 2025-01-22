@@ -44,4 +44,18 @@ class AuthScreens {
       Navigator.pushReplacementNamed(context, Constants.profileRoute);
     });
   }
+
+  static Widget buildProfileScreen(BuildContext context) {
+    return ProfileScreen(
+      actions: [
+        _handleSignOut(context),
+      ],
+    );
+  }
+
+  static SignedOutAction _handleSignOut(BuildContext context) {
+    return SignedOutAction((context) {
+      Navigator.pushReplacementNamed(context, Constants.signInRoute);
+    });
+  }
 }
