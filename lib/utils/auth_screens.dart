@@ -18,6 +18,18 @@ class AuthScreens {
   // Handle User Creation
   static AuthStateChangeAction<UserCreated> _handleUserCreation() {
     return AuthStateChangeAction<UserCreated>((context, state) {
+      
+      // If google sign in, skip re-log and go straight to profile.
+      if (FirebaseAuth.instance.currentUser?.providerData[0].providerId == "google.com") {
+        Navigator.pushReplacementNamed(context, Constants.profileRoute);
+
+        GlobalWidgets(context).showSnackBar(
+          content: "User Created Succesfully!",
+          backgroundColor: Colors.green);
+        
+        return;
+      }
+
       Navigator.pushReplacementNamed(context, Constants.signInRoute);
 
       GlobalWidgets(context).showSnackBar(
@@ -26,6 +38,7 @@ class AuthScreens {
     });
   }
 
+  // Handle user Signed In
   static AuthStateChangeAction<SignedIn> _handleSignIn(BuildContext context) {
     return AuthStateChangeAction<SignedIn>((context, state) {
       Navigator.pushReplacementNamed(context, Constants.profileRoute);
