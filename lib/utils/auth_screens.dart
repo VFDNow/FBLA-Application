@@ -41,7 +41,7 @@ class AuthScreens {
   // Handle user Signed In
   static AuthStateChangeAction<SignedIn> _handleSignIn(BuildContext context) {
     return AuthStateChangeAction<SignedIn>((context, state) {
-      Navigator.pushReplacementNamed(context, Constants.profileRoute);
+      Navigator.pushReplacementNamed(context, Constants.homeRoute);
     });
   }
 
