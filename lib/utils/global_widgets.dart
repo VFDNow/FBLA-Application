@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class GlobalWidgets {
   BuildContext context;
 
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   GlobalWidgets(this.context);
 
   // Displays SnackBar to user, lasting two seconds

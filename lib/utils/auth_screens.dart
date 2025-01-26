@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,15 +43,24 @@ class AuthScreens {
   // Handle user Signed In
   static AuthStateChangeAction<SignedIn> _handleSignIn(BuildContext context) {
     return AuthStateChangeAction<SignedIn>((context, state) async {
+      
       // Check to see if user has provided setups (Name, User Type, etc.)
-      DatabaseReference userSettingsRef = FirebaseDatabase.instance.ref();
-      final snapshot = await userSettingsRef.child('users/${FirebaseAuth.instance.currentUser!.uid}').get();
-
-      if (snapshot.exists) {
-        Navigator.pushReplacementNamed(context, Constants.homeRoute);
-      } else {
-        Navigator.pushReplacementNamed(context, Constants.firstTimeSignInRoute);
-      }
+      final db = FirebaseFirestore.instance;
+      // const querySnapshot = await 
+      db.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get().then((value) {
+        GlobalWidgets(context).showSnackBar(
+        content: "Signed In!",
+        backgroundColor: Colors.green);
+        if (value.data() == null) {
+          Navigator.pushReplacementNamed(context, Constants.firstTimeSignInRoute);
+        } else {
+          Navigator.pushReplacementNamed(context, Constants.homeRoute);
+        }
+      }).onError((object, stackTrace) {
+        GlobalWidgets(context).showSnackBar(
+        content: "Error Signing In!",
+        backgroundColor: Colors.red);
+      });
     });
   }
 

@@ -1,7 +1,9 @@
 import 'package:fbla_application/api/firebase_auth_config.dart';
+import 'package:fbla_application/screens/first_time_sign_in.dart';
 import 'package:fbla_application/screens/home_screen.dart';
 import 'package:fbla_application/utils/auth_screens.dart';
 import 'package:fbla_application/utils/constants.dart';
+import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:fbla_application/utils/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,7 @@ class FBLAApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       title: Constants.appName,
       initialRoute: (FirebaseAuth.instance.currentUser == null) ? Constants.signInRoute : Constants.homeRoute,
@@ -33,6 +36,7 @@ class FBLAApp extends StatelessWidget {
       theme: AppTheme().mainTheme,
       darkTheme: AppTheme().darkTheme,
       themeMode: ThemeMode.light,
+      navigatorKey: GlobalWidgets.navigatorKey,
       );  
   }
 
@@ -42,6 +46,7 @@ class FBLAApp extends StatelessWidget {
           AuthScreens.buildSignInScreen(context),
       Constants.homeRoute: (context) => const Home(),
       Constants.profileRoute: (context) => AuthScreens.buildProfileScreen(context),
+      Constants.firstTimeSignInRoute: (context) => FirstTimeSignIn(),
     };
   }
 }

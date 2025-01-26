@@ -45,9 +45,9 @@ class DefaultFirebaseOptions {
     appId: '1:130467636176:web:648ae79423b8ed04a1cfd5',
     messagingSenderId: '130467636176',
     projectId: 'fbla-app-fda42',
+    databaseURL: 'fbla-app-fda42.nam5.firebasedatabase.app',
     authDomain: 'fbla-app-fda42.firebaseapp.com',
     storageBucket: 'fbla-app-fda42.firebasestorage.app',
-    databaseURL: 'fbla-app-fda42.firebaseio.com',
     measurementId: 'G-P56H40SW6B',
   );
 
@@ -55,8 +55,8 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyCQR5qnDFEOAca4eqwtwQZFOn8OcbH0PBY',
     appId: '1:130467636176:android:b04405a54893bc68a1cfd5',
     messagingSenderId: '130467636176',
+    databaseURL: 'fbla-app-fda42.nam5.firebasedatabase.app',
     projectId: 'fbla-app-fda42',
-    databaseURL: 'fbla-app-fda42.firebaseio.com',
     storageBucket: 'fbla-app-fda42.firebasestorage.app',
   );
 
@@ -65,8 +65,8 @@ class DefaultFirebaseOptions {
     appId: '1:130467636176:ios:b8e403331f5d0b66a1cfd5',
     messagingSenderId: '130467636176',
     projectId: 'fbla-app-fda42',
+    databaseURL: 'fbla-app-fda42.nam5.firebasedatabase.app',
     storageBucket: 'fbla-app-fda42.firebasestorage.app',
-    databaseURL: 'fbla-app-fda42.firebaseio.com',
     iosClientId: '130467636176-6fpkfpt6dv07kqgti69cjvl887lkjj00.apps.googleusercontent.com',
     iosBundleId: 'com.example.fblaApplication',
   );
@@ -85,9 +85,10 @@ class DefaultFirebaseOptions {
     appId: '1:130467636176:web:13ad8e59f133fc58a1cfd5',
     messagingSenderId: '130467636176',
     projectId: 'fbla-app-fda42',
+    databaseURL: 'fbla-app-fda42.nam5.firebasedatabase.app',
     authDomain: 'fbla-app-fda42.firebaseapp.com',
     storageBucket: 'fbla-app-fda42.firebasestorage.app',
-    databaseURL: 'fbla-app-fda42.firebaseio.com',
+    // databaseURL: 'fbla-app-fda42.nam5.firebasedatabase.app',
     measurementId: 'G-PNX0DF9X6T',
   );
 }
