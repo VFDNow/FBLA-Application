@@ -24,7 +24,7 @@ class _FirstTimeSignInState extends State<FirstTimeSignIn>{
 
   final _nameFormKey = GlobalKey<FormState>();
 
-  EducatorType? selectedType;
+  EducatorType selectedType = EducatorType.student;
 
   @override
   void dispose() {
@@ -56,27 +56,28 @@ class _FirstTimeSignInState extends State<FirstTimeSignIn>{
           const SizedBox(height: 20),
           Text('I am a:', style: Theme.of(context).textTheme.displaySmall),
           const SizedBox(height: 20),
-          ToggleButtons(
-            isSelected: [
-              selectedType == EducatorType.student,
-              selectedType == EducatorType.teacher,
-            ],
-            onPressed: (index) {
-              setState(() {
-                selectedType = EducatorType.values[index];
-              });
-            },
-            children: const [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Student'),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Teacher'),
-              ),
-            ],
-          ),
+          SegmentedButton<EducatorType>(
+          segments: const <ButtonSegment<EducatorType>>[
+            ButtonSegment<EducatorType>(
+              value: EducatorType.student,
+              label: Text('Student'),
+              icon: Icon(Icons.school),
+            ),
+            ButtonSegment<EducatorType>(
+              value: EducatorType.teacher,
+              label: Text('Teacher'),
+              icon: Icon(Icons.person)
+            ),
+          ],
+          selected: <EducatorType>{selectedType},
+          onSelectionChanged: (Set<EducatorType> newSelection) {
+            setState(() {
+              selectedType = newSelection.first;
+            });
+          },
+          multiSelectionEnabled: false,
+          showSelectedIcon: false,
+        ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

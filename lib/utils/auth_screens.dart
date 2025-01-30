@@ -23,7 +23,7 @@ class AuthScreens {
       
       // If google sign in, skip re-log and go straight to profile.
       if (FirebaseAuth.instance.currentUser?.providerData[0].providerId == "google.com") {
-        Navigator.pushReplacementNamed(context, Constants.profileRoute);
+        Navigator.pushReplacementNamed(context, Constants.firstTimeSignInRoute);
 
         GlobalWidgets(context).showSnackBar(
           content: "User Created Succesfully!",
@@ -32,7 +32,7 @@ class AuthScreens {
         return;
       }
 
-      Navigator.pushReplacementNamed(context, Constants.signInRoute);
+      Navigator.pushReplacementNamed(context, Constants.firstTimeSignInRoute);
 
       GlobalWidgets(context).showSnackBar(
           content: "User Created Succesfully!\nPlease Sign In.",
