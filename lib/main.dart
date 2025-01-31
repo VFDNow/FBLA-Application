@@ -29,16 +29,17 @@ class FBLAApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: Constants.appName,
-      initialRoute: (FirebaseAuth.instance.currentUser == null) ? Constants.signInRoute : Constants.homeRoute,
+      initialRoute: (FirebaseAuth.instance.currentUser == null)
+          ? Constants.signInRoute
+          : Constants.homeRoute,
       routes: _buildAppRoutes(),
       theme: AppTheme().mainTheme,
       darkTheme: AppTheme().darkTheme,
       themeMode: ThemeMode.light,
       navigatorKey: GlobalWidgets.navigatorKey,
-      );  
+    );
   }
 
   Map<String, WidgetBuilder> _buildAppRoutes() {

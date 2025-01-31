@@ -40,7 +40,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  ProfileImageEditable(profileImageSeed: userData['User Image Seed'] ?? "0",),
+                  ProfileImageEditable(
+                    profileImageSeed: userData['User Image Seed'] ?? "0",
+                  ),
                   SizedBox(height: 16),
                   Text(
                     // ignore: prefer_interpolation_to_compose_strings
@@ -62,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     userData['User Type'] ??
                         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
-                        'Vestibulum in neque et nisl.',
+                            'Vestibulum in neque et nisl.',
                     style: TextStyle(
                       fontSize: 16,
                     ),
@@ -101,11 +103,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               backgroundColor: WidgetStateProperty.all<Color>(
                                   Theme.of(context).colorScheme.errorContainer),
                               foregroundColor: WidgetStateProperty.all<Color>(
-                                  Theme.of(context).colorScheme.onErrorContainer)),
-                              
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .onErrorContainer)),
                           child: Row(
                             children: [
-                              Icon(Icons.person, color: Theme.of(context).colorScheme.onErrorContainer,),
+                              Icon(
+                                Icons.person,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onErrorContainer,
+                              ),
                               SizedBox(width: 5),
                               Text("Sign Out")
                             ],
@@ -138,7 +146,8 @@ class ProfileImageEditable extends StatefulWidget {
   final String profileImageSeed;
 
   @override
-  _ProfileImageEditableState createState() => _ProfileImageEditableState(profileImageSeed: profileImageSeed);
+  _ProfileImageEditableState createState() =>
+      _ProfileImageEditableState(profileImageSeed: profileImageSeed);
 }
 
 class _ProfileImageEditableState extends State<ProfileImageEditable> {
@@ -209,28 +218,35 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
                                 updateProfileImageSeed(
                                     newSeed); // Update parent state
                               },
-                              child: Text("Change Picture"),
+                              child: Text("Randomize"),
                             ),
                           ),
                           SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Row( 
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                TextButton(onPressed: () {
-                                  Navigator.pop(context);
-                                }, 
-                                  child: Text("Exit")
-                                ), 
-                                TextButton(onPressed: () {
-                                  FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).update({
-                                    'User Image Seed': newProfileImageSeed,
-                                  });
-                                  changeRootProfileImageSeed(newProfileImageSeed);
-                                  Navigator.pop(context);
-                                }, child: Text("Save")),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("Exit")),
+                                TextButton(
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(FirebaseAuth
+                                              .instance.currentUser?.uid)
+                                          .update({
+                                        'User Image Seed': newProfileImageSeed,
+                                      });
+                                      changeRootProfileImageSeed(
+                                          newProfileImageSeed);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("Save")),
                               ],
                             ),
                           ),
