@@ -96,7 +96,7 @@ class _FirstTimeSignInState extends State<FirstTimeSignIn>{
                   db.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).set({
                     'User First': firstNameController.text,
                     'User Last': lastNameController.text,
-                    'User Type': selectedType?.index,
+                    'User Type': selectedType == EducatorType.student ? 'Student' : 'Teacher',
                   }).then((value) {
                     Navigator.pushReplacementNamed(context, Constants.homeRoute);
                   }).onError((error, stackTrace) {
