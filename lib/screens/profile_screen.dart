@@ -81,7 +81,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       content: Text(
                                           "Are you sure you would like to sign out?"),
                                       actions: [
-                                        ElevatedButton(
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text("No")),
+                                        TextButton(
                                             onPressed: () async {
                                               await FirebaseAuth.instance
                                                   .signOut();
@@ -89,20 +93,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   context,
                                                   Constants.signInRoute);
                                             },
-                                            child: Text("Yes")),
-                                        ElevatedButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: Text("No"))
+                                            child: Text("Yes"))
                                       ],
                                     ));
                           },
                           style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Colors.redAccent)),
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                  Theme.of(context).colorScheme.errorContainer),
+                              foregroundColor: WidgetStateProperty.all<Color>(
+                                  Theme.of(context).colorScheme.onErrorContainer)),
+                              
                           child: Row(
                             children: [
-                              Icon(Icons.person),
+                              Icon(Icons.person, color: Theme.of(context).colorScheme.onErrorContainer,),
                               SizedBox(width: 5),
                               Text("Sign Out")
                             ],
@@ -135,18 +138,23 @@ class ProfileImageEditable extends StatefulWidget {
   final String profileImageSeed;
 
   @override
-  _ProfileImageEditableState createState() => _ProfileImageEditableState();
+  _ProfileImageEditableState createState() => _ProfileImageEditableState(profileImageSeed: profileImageSeed);
 }
 
 class _ProfileImageEditableState extends State<ProfileImageEditable> {
+  String profileImageSeed;
   String newProfileImageSeed = 'CanMan';
-  var rng = Random();
+  var rnjesus = Random();
+
+  _ProfileImageEditableState({required this.profileImageSeed});
 
   void updateProfileImageSeed(String newSeed) {
     setState(() {
       newProfileImageSeed = newSeed;
     });
   }
+
+  // void changeNewProfileImage
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +163,7 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
         CircleAvatar(
           radius: 50,
           foregroundImage:
-              Image.network(Constants.profilePictureRoute + newProfileImageSeed)
+              Image.network(Constants.profilePictureRoute + profileImageSeed)
                   .image,
         ),
         Positioned(
@@ -172,19 +180,25 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
                       return SimpleDialog(
                         title: Text("Change Profile Picture"),
                         children: [
-                          CircleAvatar(
-                            radius: 100,
-                            foregroundImage: Image.network(
-                                    Constants.profilePictureRoute +
-                                        newProfileImageSeed)
-                                .image,
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: CircleAvatar(
+                                radius: 75,
+                                foregroundImage: Image.network(
+                                        Constants.profilePictureRoute +
+                                            newProfileImageSeed)
+                                    .image,
+                              ),
+                            ),
                           ),
                           SizedBox(height: 16),
                           Center(
                             child: ElevatedButton(
                               onPressed: () {
                                 var newSeed =
-                                    rng.nextInt(99999999).toString();
+                                    rnjesus.nextInt(999999999).toString();
                                 setState(() {
                                   newProfileImageSeed = newSeed;
                                 });
@@ -195,17 +209,25 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
                             ),
                           ),
                           SizedBox(height: 16),
-                          SimpleDialogOption(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text("Confirm"),
-                          ),
-                          SimpleDialogOption(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text("Cancel"),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row( 
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(onPressed: () {
+                                  Navigator.pop(context);
+                                }, 
+                                  child: Text("Exit")
+                                ), 
+                                TextButton(onPressed: () {
+                                  FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).update({
+                                    'User Image Seed': newProfileImageSeed,
+                                  });
+                                  Navigator.pop(context);
+                                }, child: Text("Save")),
+                              ],
+                            ),
                           ),
                         ],
                       );

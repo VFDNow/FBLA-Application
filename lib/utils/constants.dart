@@ -11,5 +11,5 @@ class Constants {
 
   // External API Routes
   static const String profilePictureRoute =
-      "https://api.dicebear.com/9.x/adventurer-neutral/png?seed=";
+      "https://api.dicebear.com/9.x/miniavs/png?seed=";
 }
