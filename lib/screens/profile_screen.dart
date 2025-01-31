@@ -154,7 +154,11 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
     });
   }
 
-  // void changeNewProfileImage
+  void changeRootProfileImageSeed(String newSeed) {
+    setState(() {
+      profileImageSeed = newSeed;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +228,7 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
                                   FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).update({
                                     'User Image Seed': newProfileImageSeed,
                                   });
+                                  changeRootProfileImageSeed(newProfileImageSeed);
                                   Navigator.pop(context);
                                 }, child: Text("Save")),
                               ],
