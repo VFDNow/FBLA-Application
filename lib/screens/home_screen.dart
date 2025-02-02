@@ -11,53 +11,57 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  var userData;
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser?.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Drawer(child: Center(child: CircularProgressIndicator()));
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Drawer(child: Center(child: Text('No data available')));
-          }
+    if (userData == null) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get()
+          .then((value) {
+        setState(() {
+          userData = value.data();
+        });
+      });
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Home'),
-            ),
-            body: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Center(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      // padding: const EdgeInsets.all(16),
-                      width: double.infinity,
-                      height: 200,
-                      color: Theme.of(context).colorScheme.primary,
-                      child: Center(
-                        child: Text(
-                          'Welcome, ${snapshot.data?['User First']}!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary),
-                        ),
-                      ),
-                    ),
-                  ],
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Home'),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Home'),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Center(
+          child: Column(
+            children: <Widget>[
+              Container(
+                // padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                height: 200,
+                color: Theme.of(context).colorScheme.primary,
+                child: Center(
+                  child: Text(
+                    'Welcome, ${userData?['User First']}!',
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary),
+                  ),
                 ),
               ),
-            ),
-            drawer: const NavigationDrawer(),
-          );
-        });
+            ],
+          ),
+        ),
+      ),
+      drawer: const NavigationDrawer(),
+    );
   }
 }

@@ -14,131 +14,136 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? userData;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const NavigationDrawer(),
-      appBar: AppBar(
-        title: Text('Profile'),
-      ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser?.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('No data available'));
-          }
+    if (userData == null) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get()
+          .then((value) {
+        setState(() {
+          userData = value.data();
+        });
+      });
 
-          var userData = snapshot.data!.data() as Map<String, dynamic>;
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  ProfileImageEditable(
-                    profileImageSeed: userData['User Image Seed'] ?? "0",
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+        drawer: const NavigationDrawer(),
+        appBar: AppBar(
+          title: Text('Profile'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                ProfileImageEditable(
+                  profileImageSeed: userData?['User Image Seed'] ?? "0",
+                ),
+                SizedBox(height: 16),
+                Text(
+                  // ignore: prefer_interpolation_to_compose_strings
+                  userData?['User First'] + " " + userData?['User Last'],
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    // ignore: prefer_interpolation_to_compose_strings
-                    userData['User First'] + " " + userData['User Last'],
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  FirebaseAuth.instance.currentUser!.email ?? 'N/A',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    FirebaseAuth.instance.currentUser!.email ?? 'N/A',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  userData['User Type'] ??
+                      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
+                          'Vestibulum in neque et nisl.',
+                  style: TextStyle(
+                    fontSize: 16,
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    userData['User Type'] ??
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
-                            'Vestibulum in neque et nisl.',
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                barrierDismissible: true,
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                      title: Text("Confirm"),
-                                      content: Text(
-                                          "Are you sure you would like to sign out?"),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: Text("No")),
-                                        TextButton(
-                                            onPressed: () async {
-                                              await FirebaseAuth.instance
-                                                  .signOut();
-                                              Navigator.pushReplacementNamed(
-                                                  context,
-                                                  Constants.signInRoute);
-                                            },
-                                            child: Text("Yes"))
-                                      ],
-                                    ));
-                          },
-                          style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all<Color>(
-                                  Theme.of(context).colorScheme.errorContainer),
-                              foregroundColor: WidgetStateProperty.all<Color>(
-                                  Theme.of(context)
-                                      .colorScheme
-                                      .onErrorContainer)),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.person,
-                                color: Theme.of(context)
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                              barrierDismissible: true,
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: Text("Confirm"),
+                                    content: Text(
+                                        "Are you sure you would like to sign out?"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: Text("No")),
+                                      TextButton(
+                                          onPressed: () async {
+                                            await FirebaseAuth.instance
+                                                .signOut();
+                                            Navigator.pushReplacementNamed(
+                                                context, Constants.signInRoute);
+                                          },
+                                          child: Text("Yes"))
+                                    ],
+                                  ));
+                        },
+                        style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.errorContainer),
+                            foregroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context)
                                     .colorScheme
-                                    .onErrorContainer,
-                              ),
-                              SizedBox(width: 5),
-                              Text("Sign Out")
-                            ],
-                          )),
-                      SizedBox(width: 16),
-                      ElevatedButton(
-                          onPressed: () {},
-                          child: Row(
-                            children: [
-                              Icon(Icons.settings),
-                              SizedBox(width: 5),
-                              Text("Settings")
-                            ],
-                          )),
-                    ],
-                  )
-                ],
-              ),
+                                    .onErrorContainer)),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onErrorContainer,
+                            ),
+                            SizedBox(width: 5),
+                            Text("Sign Out")
+                          ],
+                        )),
+                    SizedBox(width: 16),
+                    ElevatedButton(
+                        onPressed: () {},
+                        child: Row(
+                          children: [
+                            Icon(Icons.settings),
+                            SizedBox(width: 5),
+                            Text("Settings")
+                          ],
+                        )),
+                  ],
+                )
+              ],
             ),
-          );
-        },
-      ),
-    );
+          ),
+        ));
   }
 }
 
