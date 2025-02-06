@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/class_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' hide NavigationDrawer;
@@ -89,7 +90,10 @@ class _HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 30,
                           children: [
-                            BasicAdditionCard(onTap: () {}),
+                            BasicAdditionCard(onTap: () {
+                              Navigator.pushNamed(
+                                  context, Constants.createClassRoute);
+                            }),
                             ...classCards,
                           ],
                         ),

@@ -1,4 +1,5 @@
 import 'package:fbla_application/api/firebase_auth_config.dart';
+import 'package:fbla_application/screens/create_class.dart';
 import 'package:fbla_application/screens/first_time_sign_in.dart';
 import 'package:fbla_application/screens/home_screen.dart';
 import 'package:fbla_application/screens/profile_screen.dart';
@@ -49,6 +50,7 @@ class FBLAApp extends StatelessWidget {
       Constants.homeRoute: (context) => const Home(),
       Constants.profileRoute: (context) => ProfileScreen(),
       Constants.firstTimeSignInRoute: (context) => FirstTimeSignIn(),
+      Constants.createClassRoute: (context) => CreateClassScreen(),
     };
   }
 }
