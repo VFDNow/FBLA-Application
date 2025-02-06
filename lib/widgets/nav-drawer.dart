@@ -40,7 +40,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         children: [
           buildHeader(context, userData),
           Divider(color: Theme.of(context).dividerColor),
-          buildMenuItems(context)
+          buildMenuItems(context, userData)
         ],
       ),
     ));
@@ -86,21 +86,70 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         ),
       );
 
-  Widget buildMenuItems(BuildContext context) => Column(
-        children: [
-          ListTile(
-            leading: Icon(Icons.home),
-            title: const Text('Home'),
-            onTap: () =>
-                Navigator.pushReplacementNamed(context, Constants.homeRoute),
+  Widget buildMenuItems(BuildContext context, Map<String, dynamic>? userData) {
+    List<StatelessWidget> classes = buildClassList(context, userData);
+
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(Icons.home),
+          title: const Text('Home'),
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, Constants.homeRoute),
+        ),
+        Divider(color: Theme.of(context).dividerColor),
+        ListTile(
+          title: Text(
+            "Classes",
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-          Divider(color: Theme.of(context).dividerColor),
-          ListTile(
-            leading: Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () => Navigator.pushNamed(context, Constants.profileRoute),
-          ),
-          Divider(color: Theme.of(context).dividerColor)
-        ],
-      );
+          minVerticalPadding: 0,
+        ),
+        ...classes,
+        // Add in each of the classes the user is enrolled in
+        ListTile(
+          leading: Icon(Icons.add),
+          title: Text(userData?['User First'].toString() == "Teacher"
+              ? "Create Class"
+              : "Join Class"),
+          onTap: () => {},
+        ),
+        Divider(color: Theme.of(context).dividerColor),
+        ListTile(
+          leading: Icon(Icons.person),
+          title: const Text('Profile'),
+          onTap: () => Navigator.pushNamed(context, Constants.profileRoute),
+        ),
+        Divider(color: Theme.of(context).dividerColor)
+      ],
+    );
+  }
+
+  List<StatelessWidget> buildClassList(
+      BuildContext context, Map<String, dynamic>? userData) {
+    if (userData?['Classes'] != null) {
+      List<StatelessWidget> classes = [];
+
+      var borderColorToggle = true;
+
+      for (var classData in userData?['Classes']) {
+        classes.add(ListTile(
+          titleAlignment: ListTileTitleAlignment.center,
+          tileColor: borderColorToggle
+              ? Theme.of(context).colorScheme.surfaceContainerHigh
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          leading: Icon(
+              Constants.iconStringMap[classData['Class Icon'] ?? "School"]),
+          title: Text(classData['Class Name'] ?? "Class"),
+          trailing: Text(classData['Teacher Name'] ?? "",
+              style: Theme.of(context).textTheme.labelSmall),
+          onTap: () => {},
+        ));
+        borderColorToggle = !borderColorToggle;
+      }
+
+      return classes;
+    }
+    return [];
+  }
 }

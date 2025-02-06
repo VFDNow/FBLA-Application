@@ -2,5 +2,9 @@
   "IDX.aI.enableInlineCompletion": true,
   "IDX.aI.enableCodebaseIndexing": true,
   //   "editor.defaultFormatter": "esbenp.prettier-vscode"
-  "[dart]": { "editor.defaultFormatter": "Dart-Code.dart-code" }
+  "[dart]": {
+    "editor.defaultFormatter": "Dart-Code.dart-code"
+  },
+  "cmake.ignoreCMakeListsMissing": true,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

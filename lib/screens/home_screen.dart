@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fbla_application/widgets/class_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' hide NavigationDrawer;
 import 'package:fbla_application/widgets/nav-drawer.dart';
@@ -11,10 +12,20 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  var userData;
+  Map<String, dynamic>? userData;
   @override
   Widget build(BuildContext context) {
     if (userData == null) {
+      if (FirebaseAuth.instance.currentUser == null) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Home'),
+          ),
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
       FirebaseFirestore.instance
           .collection('users')
           .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -34,6 +45,8 @@ class _HomeState extends State<Home> {
         ),
       );
     }
+
+    List<Widget> classCards = buildClassCards(context, userData!);
 
     return Scaffold(
       appBar: AppBar(
@@ -57,11 +70,55 @@ class _HomeState extends State<Home> {
                   ),
                 ),
               ),
+              Container(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
+                      child: Text('My Classes',
+                          style: Theme.of(context).textTheme.headlineMedium),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 30,
+                          children: [
+                            BasicAdditionCard(onTap: () {}),
+                            ...classCards,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
       ),
       drawer: const NavigationDrawer(),
     );
+  }
+
+  List<Widget> buildClassCards(
+      BuildContext context, Map<String, dynamic> userData) {
+    List<Widget> classCards = [];
+
+    if (userData["Classes"] != null) {
+      for (Map<String, dynamic> classData in userData["Classes"]) {
+        classCards.add(ClassCard(
+            className: classData["Class Name"] ?? "Class",
+            teacherName: classData["Teacher Name"] ?? "Teacher",
+            onTap: () {}));
+      }
+    }
+
+    return classCards;
   }
 }

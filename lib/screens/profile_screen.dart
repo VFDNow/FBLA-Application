@@ -73,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  userData['User Type'] ??
+                  userData?['User Type'] ??
                       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
                           'Vestibulum in neque et nisl.',
                   style: TextStyle(
