@@ -120,7 +120,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                           'Class Hour': _classHour,
                           'Class Desc': _classDescription,
                           'Class Icon': currentIcon,
-                          'Owner' : FirebaseAuth.instance.currentUser?.uid
+                          'Owner': FirebaseAuth.instance.currentUser?.uid,
                         })
                         .then((value) => print("Class Added"))
                         .catchError(
