@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/utils/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CreateClassScreen extends StatefulWidget {
@@ -119,6 +120,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                           'Class Hour': _classHour,
                           'Class Desc': _classDescription,
                           'Class Icon': currentIcon,
+                          'Owner' : FirebaseAuth.instance.currentUser?.uid
                         })
                         .then((value) => print("Class Added"))
                         .catchError(
