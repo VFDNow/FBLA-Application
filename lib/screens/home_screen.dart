@@ -65,7 +65,7 @@ class _HomeState extends State<Home> {
                 color: Theme.of(context).colorScheme.primary,
                 child: Center(
                   child: Text(
-                    'Welcome, ${userData?['User First']}!',
+                    'Welcome, ${userData?['userFirst']}!',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary),
                   ),
@@ -114,11 +114,11 @@ class _HomeState extends State<Home> {
       BuildContext context, Map<String, dynamic> userData) {
     List<Widget> classCards = [];
 
-    if (userData["Classes"] != null) {
-      for (Map<String, dynamic> classData in userData["Classes"]) {
+    if (userData["classes"] != null) {
+      for (Map<String, dynamic> classData in userData["classes"]) {
         classCards.add(ClassCard(
-            className: classData["Class Name"] ?? "Class",
-            teacherName: classData["Teacher Name"] ?? "Teacher",
+            className: classData["className"] ?? "Class",
+            teacherName: classData["teacherName"] ?? "Teacher",
             onTap: () {}));
       }
     }

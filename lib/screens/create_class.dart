@@ -116,11 +116,11 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                     FirebaseFirestore.instance
                         .collection('classes')
                         .add({
-                          'Class Name': _className,
-                          'Class Hour': _classHour,
-                          'Class Desc': _classDescription,
-                          'Class Icon': currentIcon,
-                          'Owner': FirebaseAuth.instance.currentUser?.uid,
+                          'className': _className,
+                          'classHour': _classHour,
+                          'classDesc': _classDescription,
+                          'classIcon': currentIcon,
+                          'owner': FirebaseAuth.instance.currentUser?.uid,
                         })
                         .then((value) => print("Class Added"))
                         .catchError(

@@ -52,12 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 ProfileImageEditable(
-                  profileImageSeed: userData?['User Image Seed'] ?? "0",
+                  profileImageSeed: userData?['userImageSeed'] ?? "0",
                 ),
                 SizedBox(height: 16),
                 Text(
                   // ignore: prefer_interpolation_to_compose_strings
-                  userData?['User First'] + " " + userData?['User Last'],
+                  userData?['userFirst'] + " " + userData?['userFirst'],
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -73,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  userData?['User Type'] ??
+                  userData?['userType'] ??
                       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
                           'Vestibulum in neque et nisl.',
                   style: TextStyle(
@@ -247,7 +247,7 @@ class _ProfileImageEditableState extends State<ProfileImageEditable> {
                                           .doc(FirebaseAuth
                                               .instance.currentUser?.uid)
                                           .update({
-                                        'User Image Seed': newProfileImageSeed,
+                                        'userImageSeed': newProfileImageSeed,
                                       });
                                       changeRootProfileImageSeed(
                                           newProfileImageSeed);

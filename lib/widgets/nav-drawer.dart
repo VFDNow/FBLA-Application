@@ -63,15 +63,15 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                       radius: 100,
                       backgroundImage: NetworkImage(
                           Constants.profilePictureRoute +
-                              userData?['User Image Seed']),
+                              userData?['userImageSeed']),
                     ),
                     const SizedBox(height: 10),
                     // ignore: prefer_interpolation_to_compose_strings
-                    Text(userData?['User First'] + " " + userData?['User Last'],
+                    Text(userData?['userFirst'] + " " + userData?['userFirst'],
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.onPrimary)),
                     const SizedBox(height: 10),
-                    Text(userData?['User Type'],
+                    Text(userData?['userType'],
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -109,7 +109,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
         // Add in each of the classes the user is enrolled in
         ListTile(
           leading: Icon(Icons.add),
-          title: Text(userData?['User First'].toString() == "Teacher"
+          title: Text(userData?['userType'].toString() == "Teacher"
               ? "Create Class"
               : "Join Class"),
           onTap: () => {},
@@ -127,21 +127,21 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
 
   List<StatelessWidget> buildClassList(
       BuildContext context, Map<String, dynamic>? userData) {
-    if (userData?['Classes'] != null) {
+    if (userData?['classes'] != null) {
       List<StatelessWidget> classes = [];
 
       var borderColorToggle = true;
 
-      for (var classData in userData?['Classes']) {
+      for (var classData in userData?['classes']) {
         classes.add(ListTile(
           titleAlignment: ListTileTitleAlignment.center,
           tileColor: borderColorToggle
               ? Theme.of(context).colorScheme.surfaceContainerHigh
               : Theme.of(context).colorScheme.surfaceContainerHighest,
-          leading: Icon(
-              Constants.iconStringMap[classData['Class Icon'] ?? "School"]),
-          title: Text(classData['Class Name'] ?? "Class"),
-          trailing: Text(classData['Teacher Name'] ?? "",
+          leading:
+              Icon(Constants.iconStringMap[classData['classIcon'] ?? "School"]),
+          title: Text(classData['className'] ?? "Class"),
+          trailing: Text(classData['teacherName'] ?? "",
               style: Theme.of(context).textTheme.labelSmall),
           onTap: () => {},
         ));
