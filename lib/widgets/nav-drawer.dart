@@ -67,7 +67,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
                     ),
                     const SizedBox(height: 10),
                     // ignore: prefer_interpolation_to_compose_strings
-                    Text(userData?['userFirst'] + " " + userData?['userFirst'],
+                    Text(userData?['userFirst'] + " " + userData?['userLast'],
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context).colorScheme.onPrimary)),
                     const SizedBox(height: 10),
@@ -112,7 +112,12 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           title: Text(userData?['userType'].toString() == "Teacher"
               ? "Create Class"
               : "Join Class"),
-          onTap: () => {},
+          onTap: () => {
+            if ((userData?['userType'].toString() ?? "Student") == "Teacher")
+              {Navigator.pushNamed(context, Constants.createClassRoute)}
+            else
+              {Navigator.pushNamed(context, Constants.joinClassRoute)}
+          },
         ),
         Divider(color: Theme.of(context).dividerColor),
         ListTile(
