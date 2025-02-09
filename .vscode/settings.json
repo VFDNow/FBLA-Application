@@ -2,6 +2,10 @@
   "IDX.aI.enableInlineCompletion": true,
   "IDX.aI.enableCodebaseIndexing": true,
   //   "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.validate": ["javascript"],
   "[dart]": {
     "editor.defaultFormatter": "Dart-Code.dart-code"
   },

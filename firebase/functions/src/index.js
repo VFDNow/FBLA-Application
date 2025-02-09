@@ -10,6 +10,8 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 initializeApp();
 
+// Runs when a class is created.
+// Updates the owning users classes data to include the new class
 exports.onClassCreation = onDocumentCreated(
   "/classes/{classId}",
   async (event) => {
@@ -25,7 +27,6 @@ exports.onClassCreation = onDocumentCreated(
 
     // Perform additional actions here, such as sending notifications or updating other collections
     const ownerUid = classData["owner"];
-
     const db = getFirestore();
 
     const ownerDoc = await db.collection("users").doc(ownerUid).get();
