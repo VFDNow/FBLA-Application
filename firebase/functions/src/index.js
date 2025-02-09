@@ -42,7 +42,7 @@ exports.onClassCreation = onDocumentCreated(
         .doc(ownerUid)
         .set(
           {
-            Classes: [
+            classes: [
               {
                 classIcon: classData["classIcon"],
                 classId: classId,
@@ -57,7 +57,7 @@ exports.onClassCreation = onDocumentCreated(
       var docref = db.collection("users").doc(ownerUid);
 
       docref.update({
-        Classes: FieldValue.arrayUnion({
+        classes: FieldValue.arrayUnion({
           classIcon: classData["classIcon"] ?? "General",
           classId: classId,
           className: classData["className"] ?? "Class",

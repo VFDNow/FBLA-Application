@@ -57,7 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SizedBox(height: 16),
                 Text(
                   // ignore: prefer_interpolation_to_compose_strings
-                  userData?['userFirst'] + " " + userData?['userFirst'],
+                  userData?['userFirst'] + " " + userData?['userLast'],
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
