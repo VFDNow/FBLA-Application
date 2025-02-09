@@ -11,6 +11,7 @@ class Constants {
   static const String profileRoute = "/profile";
   static const String landingRoute = "/landing";
   static const String createClassRoute = "/create-class";
+  static const String joinClassRoute = "/join-class";
 
   // External API Routes
   static const String profilePictureRoute =

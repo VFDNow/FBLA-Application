@@ -92,7 +92,11 @@ class _HomeState extends State<Home> {
                           children: [
                             BasicAdditionCard(onTap: () {
                               Navigator.pushNamed(
-                                  context, Constants.createClassRoute);
+                                  context,
+                                  (userData?["userType"] ?? "Student") ==
+                                          "Student"
+                                      ? Constants.joinClassRoute
+                                      : Constants.createClassRoute);
                             }),
                             ...classCards,
                           ],
