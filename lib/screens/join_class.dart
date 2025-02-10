@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:flutter/material.dart';
@@ -158,7 +159,38 @@ class JoinClassDialog extends StatelessWidget {
                     Navigator.pop(context);
                   },
                   child: Text("No")),
-              TextButton(onPressed: () {}, child: Text("Join")),
+              TextButton(
+                  onPressed: () async {
+                    try {
+                      final result = await FirebaseFunctions.instance
+                          .httpsCallable("onClassJoin")
+                          .call(
+                        <String, dynamic>{"classId": data?["classId"]},
+                      );
+                      if (result.data["res"]) {
+                        if (context.mounted) {
+                          GlobalWidgets(context).showSnackBar(
+                            content: result.data["result"],
+                          );
+                        }
+                      } else {
+                        if (context.mounted) {
+                          GlobalWidgets(context).showSnackBar(
+                              content: result.data["result"],
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.error);
+                        }
+                      }
+                    } on FirebaseFunctionsException catch (error) {
+                      if (context.mounted) {
+                        GlobalWidgets(context).showSnackBar(
+                            content: "Error joining class.  Please Try Again.",
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error);
+                      }
+                    }
+                  },
+                  child: Text("Join")),
             ],
           ),
         ),

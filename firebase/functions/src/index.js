@@ -1,7 +1,7 @@
-// import { DocumentSnapshot, FieldValue } from "firebase-admin/firestore";
-// import { FirestoreEvent } from "firebase-functions/firestore";
 
 const { logger } = require("firebase-functions");
+// const { onRequest } = require("firebase-functions/v2/https");
+const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
 // const admin = require("firebase-admin");
@@ -10,8 +10,81 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 initializeApp();
 
+//http://127.0.0.1:5001/fbla-app-fda42/us-central1/onClassJoin?classId=dcgQSCcz94Ks7Rzsp1oY&userId=FC5ryn30FOSmHBDGydMb
+
+exports.onClassJoin = onCall(async (request) => {
+  const classId = request.data.classId;
+  const userId = request.auth.uid;
+
+  const db = getFirestore();
+  const userDoc = db.collection("users").doc(userId);
+  const classDoc = db.collection("classes").doc(classId);
+  const classData = (await classDoc.get()).data();
+  const userData = (await userDoc.get()).data();
+  const teacherData = (await db.collection("users").doc(classData["owner"]).get()).data();
+
+  for (student in classData["students"] ?? []) {
+    if (student.studentId ?? "" == userId) {
+      return {
+        res: false,
+        result: `Error! User already in class.`
+      }
+    }
+  }
+
+  // Add class to the users class list
+  if (!userData["classes"] || userData["classes"].length <= 0) {
+    userDoc.set({
+      classes: [
+        {
+          classIcon: classData["classIcon"],
+          classId: classId,
+          className: classData["className"],
+          teacherName: `${teacherData["userFirst"]} ${teacherData["userLast"]}`,
+        },
+      ],
+    }, { merge: true })
+  } else {
+    userDoc.update({
+      classes: FieldValue.arrayUnion({
+        classIcon: classData["classIcon"] ?? "General",
+        classId: classId,
+        className: classData["className"] ?? "Class",
+        teacherName: `${teacherData["userFirst"]} ${teacherData["userLast"]}` ?? "",
+      }),
+    })
+  }
+
+  // Add user to classes students list
+  if (!classData["students"]) {
+    classDoc.set({
+      students: [
+        {
+          studentId: userId,
+          studentIcon: userData["userImageSeed"] ?? "abc",
+          userName: `${userData["userFirst"]} ${userData["userLast"]}` ?? "Student Name",
+        }
+      ]
+    }, { merge: true })
+  } else {
+    classDoc.update({
+      students: FieldValue.arrayUnion({
+        studentId: userId,
+        studentIcon: userData["userImageSeed"] ?? "abc",
+        userName: `${userData["userFirst"]} ${userData["userLast"]}` ?? "Student Name",
+      })
+    })
+  }
+
+  return {
+    res: true,
+    result: `User Succesfully joined class: ${classData["className"] ?? "className"}`
+  }
+  
+});
+
 // Runs when a class is created.
-// Updates the owning users classes data to include the new class
+// Updates the owning users classes data to include the new class, and adds a new invite link to invites
 exports.onClassCreation = onDocumentCreated(
   "/classes/{classId}",
   async (event) => {
@@ -25,7 +98,7 @@ exports.onClassCreation = onDocumentCreated(
       return;
     }
 
-    // Perform additional actions here, such as sending notifications or updating other collections
+    // 
     const ownerUid = classData["owner"];
     const db = getFirestore();
 
@@ -61,11 +134,23 @@ exports.onClassCreation = onDocumentCreated(
           classIcon: classData["classIcon"] ?? "General",
           classId: classId,
           className: classData["className"] ?? "Class",
-          "Teacher Name": `${ownerData["userFirst"] ?? "Teacher"} ${
+          teacherName: `${ownerData["userFirst"] ?? "Teacher"} ${
             ownerData["userLast"] ?? ""
           }`,
         }),
       });
     }
+
+    // Add invite link to database
+    db.collection("invites").doc().set({
+      classId: classId,
+      className: classData["className"] ?? "Class",
+      classIcon: classData["classIcon"] ?? "General",
+      classHour: classData["classHour"] ?? "Hour",
+      classDesc: classData["classDesc"] ?? "Desc",
+      teacherName: `${ownerData["userFirst"] ?? "Teacher"} ${
+            ownerData["userLast"] ?? ""
+          }`,
+    });
   }
 );
