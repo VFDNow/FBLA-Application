@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/utils/constants.dart';
+import 'package:fbla_application/screens/class_home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -148,7 +149,10 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           title: Text(classData['className'] ?? "Class"),
           trailing: Text(classData['teacherName'] ?? "",
               style: Theme.of(context).textTheme.labelSmall),
-          onTap: () => {},
+          onTap: () => {
+            Navigator.pushNamed(context, Constants.classHomeRoute,
+                arguments: ClassHomeArgs(classData["classId"] ?? ""))
+          },
         ));
         borderColorToggle = !borderColorToggle;
       }

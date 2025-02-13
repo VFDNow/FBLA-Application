@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fbla_application/screens/class_home_screen.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/class_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -123,7 +124,10 @@ class _HomeState extends State<Home> {
         classCards.add(ClassCard(
             className: classData["className"] ?? "Class",
             teacherName: classData["teacherName"] ?? "Teacher",
-            onTap: () {}));
+            onTap: () {
+              Navigator.pushNamed(context, Constants.classHomeRoute,
+                  arguments: ClassHomeArgs(classData["classId"] ?? ""));
+            }));
       }
     }
 
