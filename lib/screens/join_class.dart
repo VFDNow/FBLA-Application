@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:fbla_application/screens/class_home_screen.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +62,7 @@ class _JoinClassScreenState extends State<JoinClassScreen> {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
                         var db = FirebaseFirestore.instance;
-                        var doc = db
+                        db
                             .collection("invites")
                             .doc(_joinCode)
                             .get()
@@ -172,6 +173,10 @@ class JoinClassDialog extends StatelessWidget {
                           GlobalWidgets(context).showSnackBar(
                             content: result.data["result"],
                           );
+                          Navigator.pop(context);
+                          Navigator.pushReplacementNamed(
+                              context, Constants.classHomeRoute,
+                              arguments: ClassHomeArgs(data?["classId"]));
                         }
                       } else {
                         if (context.mounted) {
@@ -179,6 +184,7 @@ class JoinClassDialog extends StatelessWidget {
                               content: result.data["result"],
                               backgroundColor:
                                   Theme.of(context).colorScheme.error);
+                          Navigator.pop(context);
                         }
                       }
                     } on FirebaseFunctionsException catch (error) {

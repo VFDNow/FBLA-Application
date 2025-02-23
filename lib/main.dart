@@ -17,7 +17,9 @@ import 'firebase_options.dart';
 void main() async {
   // Ensure firebase initialized before booting app
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
+    name: 'FBLA',
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
