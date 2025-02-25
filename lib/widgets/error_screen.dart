@@ -8,7 +8,12 @@ class ErrorWidget extends StatelessWidget{
     @override
     Widget build(BuildContext context) {
         return Center(
-            child: Column()
+            child: Column(
+                children: [
+                    Icon(Icons.error),
+                    Text(errorMessage)
+                ]
+            )
         );
     }
 }
