@@ -5,6 +5,7 @@ import 'package:fbla_application/screens/first_time_sign_in.dart';
 import 'package:fbla_application/screens/home_screen.dart';
 import 'package:fbla_application/screens/join_class.dart';
 import 'package:fbla_application/screens/profile_screen.dart';
+import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:fbla_application/utils/auth_screens.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
@@ -13,13 +14,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 
 void main() async {
   // Ensure firebase initialized before booting app
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
-    name: 'FBLA',
+    name: defaultTargetPlatform == TargetPlatform.android ? 'FBLA' : null,
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -57,6 +60,7 @@ class FBLAApp extends StatelessWidget {
       Constants.createClassRoute: (context) => CreateClassScreen(),
       Constants.joinClassRoute: (context) => JoinClassScreen(),
       Constants.classHomeRoute: (context) => ClassHome(),
+      Constants.quizRoute: (context) => QuizScreen(),
     };
   }
 }

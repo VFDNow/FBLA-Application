@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fbla_application/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class ClassHomeArgs {
@@ -54,7 +55,17 @@ class _ClassHomeState extends State<ClassHome> {
         title: Text((classData?["className"] ?? "Error") + " Home"),
       ),
       body: Center(
-        child: Text(classData?["className"] ?? "Error"),
+        child: Column(
+          children: [
+            Text(classData?["className"] ?? "Error"),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, Constants.quizRoute);
+              },
+              child: Text("Take Quiz"),
+            ),
+          ],
+        ),
       ),
     );
   }
