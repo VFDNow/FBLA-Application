@@ -144,8 +144,8 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           tileColor: borderColorToggle
               ? Theme.of(context).colorScheme.surfaceContainerHigh
               : Theme.of(context).colorScheme.surfaceContainerHighest,
-          leading:
-              Icon(Constants.iconStringMap[classData['classIcon'] ?? "School"]),
+          leading: Icon(Constants
+              .subjectIconStringMap[classData['classIcon'] ?? "School"]),
           title: Text(classData['className'] ?? "Class"),
           trailing: Text(classData['teacherName'] ?? "",
               style: Theme.of(context).textTheme.labelSmall),

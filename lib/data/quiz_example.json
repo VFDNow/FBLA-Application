@@ -1,74 +1,64 @@
 {
-    "quizName" : "Name",
-    "quizDesc" : "Description Here",
-    "shuffleOrder" : true,
-    "authors" : [
+    "quizName": "Name",
+    "quizDesc": "Description Here",
+    "shuffleOrder": true,
+    "authors": [
         "Author A",
         "Author B"
     ],
-
-    "questions" : [
+    "questions": [
         {
-            "questionId" : 0,
-            "questionType" : "MC",
-
-            "questionTitle" : "What is the evaluation of this text here?",
-            "questionBody" : "The correct answer is the 1st and second option.",
+            "questionId": 0,
+            "questionType": "MC",
+            "questionTitle": "What is the evaluation of this text here?",
+            "questionBody": "The correct answer is the 1st and second option.",
             "embeds": [
                 "https://media.istockphoto.com/id/839295596/photo/six-pre-teen-friends-piggybacking-in-a-park-close-up-portrait.jpg?s=612x612&w=0&k=20&c=MWkFYzpRSvO1dRql3trV4k6ECO-rTy4HgF8OxrtUkH8=",
                 "FiREBASE STORAGE IMAGE"
             ],
-            
-            
-            "correctAnswers" : [
-                0, 1
+            "correctAnswers": [
+                0,
+                1
             ],
-
-            "answers" : [
+            "answers": [
                 {
-                    "questonId": 0,
-                    "questionBody" : "Answer A",
-                    "questionIcon" : "iconName"
+                    "answerId": 0,
+                    "answerBody": "Answer A",
+                    "answerIcon": "iconName"
                 },
                 {
-                    "questionId": 1,
-                    "questionBody" : "Answer B",
-                    "questionIcon" : "iconName"
+                    "answerId": 1,
+                    "answerBody": "Answer B",
+                    "answerIcon": "iconName"
                 },
                 {
-                    "questionId": 2,
-                    "questionBody" : "Answer C",
-                    "questionIcon" : "iconName"
+                    "answerId": 2,
+                    "answerBody": "Answer C",
+                    "answerIcon": "iconName"
                 },
                 {
-                    "questionId": 3,
-                    "questionBody" : "Answer D",
-                    "questionIcon" : "iconName"
+                    "answerId": 3,
+                    "answerBody": "Answer D",
+                    "answerIcon": "iconName"
                 }
             ]
         },
         {
-            "questionId" : 1,
-            "questionType" : "TrueFalse",
-
-            "questionTitle" : "What is the evaluation of this text here?",
-            "questionBody" : "The correct answer is True.",
-            
-            "answer" : true
+            "questionId": 1,
+            "questionType": "TrueFalse",
+            "questionTitle": "What is the evaluation of this text here?",
+            "questionBody": "The correct answer is True.",
+            "answer": true
         },
         {
-            "questionId" : 2,
-            "questionType" : "ShortAnswer",
-
-            "questionTitle" : "What is the evaluation of this text here?",
-            "questionBody" : "The correct answer is abcdefg.",
-
-            "singleWord" : true,
-            
-            "answers" : [
+            "questionId": 2,
+            "questionType": "ShortAnswer",
+            "questionTitle": "What is the evaluation of this text here?",
+            "questionBody": "The correct answer is abcdefg.",
+            "singleWord": true,
+            "answers": [
                 "abcdefg"
             ]
         }
-    ] 
-
+    ]
 }

@@ -121,7 +121,8 @@ class JoinClassDialog extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Icon(
-                  Constants.iconStringMap[data?["classIcon"] ?? "General"],
+                  Constants
+                      .subjectIconStringMap[data?["classIcon"] ?? "General"],
                   size: 65,
                 ),
               ),

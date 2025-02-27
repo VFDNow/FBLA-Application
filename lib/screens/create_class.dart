@@ -35,7 +35,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                   children: [
                     Container(
                         padding: const EdgeInsets.all(16),
-                        child: Icon(Constants.iconStringMap[currentIcon],
+                        child: Icon(Constants.subjectIconStringMap[currentIcon],
                             size: 50)),
                     SizedBox(width: 25),
                     Expanded(
@@ -90,15 +90,15 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                       enableFilter: true,
                       initialSelection: currentIcon,
                       leadingIcon: Icon(
-                        Constants.iconStringMap[currentIcon],
+                        Constants.subjectIconStringMap[currentIcon],
                       ),
-                      dropdownMenuEntries: Constants.iconStringMap.keys
+                      dropdownMenuEntries: Constants.subjectIconStringMap.keys
                           .map<DropdownMenuEntry>((iconName) {
                         return DropdownMenuEntry<String>(
                             label: iconName,
                             value: iconName,
                             leadingIcon:
-                                Icon(Constants.iconStringMap[iconName]));
+                                Icon(Constants.subjectIconStringMap[iconName]));
                       }).toList(),
                       onSelected: (value) {
                         setState(() {

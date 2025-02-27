@@ -20,7 +20,7 @@ class Constants {
       "https://api.dicebear.com/9.x/miniavs/png?seed=";
 
   // Icon String Map
-  static const Map<String, IconData> iconStringMap = {
+  static const Map<String, IconData> subjectIconStringMap = {
     "General": Icons.school,
     "Science": Icons.science,
     "Math": Icons.calculate,
@@ -31,5 +31,11 @@ class Constants {
     "Music": Icons.music_note,
     "Computer Science": Icons.computer,
     "Language": Icons.language,
+  };
+
+  static const Map<String, IconData> questionIconStringMap = {
+    "star": Icons.star,
+    "check": Icons.check,
+    "token": Icons.token,
   };
 }

@@ -1,4 +1,4 @@
-import 'package:fbla_application/widgets/quiz_ui/quiz_question';
+import 'package:fbla_application/widgets/quiz_ui/quiz_question.dart';
 import 'package:flutter/material.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -27,11 +27,11 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz Screen'),
+        title: Text('Quiz Name'),
       ),
       body: PageView(
         controller: _pageController,
-        children: [QuizQuestion()],
+        children: [QuizQuestion(), QuizQuestion()],
       ),
     );
   }
