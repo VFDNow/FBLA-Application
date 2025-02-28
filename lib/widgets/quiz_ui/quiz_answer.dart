@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class QuizAnswer extends StatefulWidget {
   final String body;
   final String? iconName;
+  final Color? color;
 
   const QuizAnswer({
     Key? key,
     required this.body,
     this.iconName,
+    this.color,
   }) : super(key: key);
 
   @override
@@ -21,16 +23,16 @@ class _QuizAnswerState extends State<QuizAnswer> {
     return Container(
       child: Card(
         elevation: 4,
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: widget.color ?? Theme.of(context).colorScheme.secondary,
         child: InkWell(
+          s
           borderRadius: BorderRadius.circular(8),
           onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
+                Center(
                   child: Icon(
                       widget.iconName != null
                           ? Constants.questionIconStringMap[widget.iconName]

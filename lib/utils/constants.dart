@@ -19,6 +19,17 @@ class Constants {
   static const String profilePictureRoute =
       "https://api.dicebear.com/9.x/miniavs/png?seed=";
 
+  static const List<Color> quizColors = [
+    Color(0xFFE57373),
+    Color(0xFF81C784),
+    Color(0xFF64B5F6),
+    Color(0xFFFFD54F),
+    Color(0xFF9575CD),
+    Color(0xFF4DB6AC),
+    Color(0xFFA1887F),
+    Color(0xFF90A4AE),
+  ];
+
   // Icon String Map
   static const Map<String, IconData> subjectIconStringMap = {
     "General": Icons.school,

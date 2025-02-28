@@ -19,7 +19,16 @@ class _QuizQuestionState extends State<QuizQuestion> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final halfHeight = constraints.maxHeight / 2;
+        final answersHeight = constraints.maxHeight / 1.6;
+        var crossAxisAmount = 2;
+        if (answers == null) {
+          crossAxisAmount == 1;
+        }  else if (answers.length <= 1) {
+          crossAxisAmount == 1;
+        }
+        if (constraints.maxWidth < 600) {
+          crossAxisAmount = 1;
+        }
 
         return Column(
           children: [
@@ -30,15 +39,15 @@ class _QuizQuestionState extends State<QuizQuestion> {
               ),
             ),
             SizedBox(
-              height: halfHeight,
+              height: answersHeight,
               child: GridView.builder(
                 padding: const EdgeInsets.all(20.0),
-                physics: const NeverScrollableScrollPhysics(),
+                // physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: (constraints.maxWidth / 2) /
-                      (halfHeight /
-                          (((answers?.length ?? 2.0) / 2.0).ceil() +
+                  crossAxisCount: crossAxisAmount,
+                  childAspectRatio: (constraints.maxWidth / crossAxisAmount) /
+                      (answersHeight /
+                          (((answers?.length ?? 2.0) / crossAxisAmount).ceil() +
                               (answers?.length ?? 2.0) / 10)),
                   mainAxisSpacing: 10.0,
                   crossAxisSpacing: 10.0,
@@ -58,6 +67,7 @@ class _QuizQuestionState extends State<QuizQuestion> {
                     return QuizAnswer(
                       body: answerData['answerBody'] ?? 'Answer ${index + 1}',
                       iconName: icon ?? 'star',
+                      color: Constants.quizColors[index % Constants.quizColors.length],
                     );
                   }
 
