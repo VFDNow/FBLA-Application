@@ -37,5 +37,12 @@ class Constants {
     "star": Icons.star,
     "check": Icons.check,
     "token": Icons.token,
+    "bold": Icons.bolt,
+    "tornado": Icons.tornado,
+    "cookie": Icons.cookie,
+    "cake": Icons.cake,
+    "computer": Icons.computer,
+    "person": Icons.person,
+    "flutter": Icons.flutter_dash
   };
 }

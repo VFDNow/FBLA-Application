@@ -43,7 +43,7 @@ class _QuizAnswerState extends State<QuizAnswer> {
                   child: Center(
                     child: Text(
                       widget.body,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSecondaryContainer,
