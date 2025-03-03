@@ -1,4 +1,5 @@
-import 'package:fbla_application/widgets/quiz_ui/quiz_question.dart';
+import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
+import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
 import 'package:flutter/material.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -10,6 +11,19 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   late PageController _pageController;
+  int currentPage = 0;
+
+  //TEMPORARY
+  int pageCount = 3;
+
+  void setPage(int newPage) {
+    currentPage = newPage;
+    if (currentPage < 0) {
+      currentPage = 0;
+    } else if (currentPage >= pageCount) {
+      currentPage = pageCount - 1;
+    }
+  }
 
   @override
   void initState() {
@@ -24,12 +38,13 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   bool get _isFirstPage {
-    print(_pageController.hasClients);
-    return _pageController.hasClients && (_pageController.page ?? 0) <= 0;
+    return currentPage <= 0;
+    // return _pageController.hasClients && (_pageController.page ?? 0) <= 0;
   }
 
   bool get _isLastPage {
-    return _pageController.hasClients && (_pageController.page ?? 0) >= 1;
+    return currentPage >= pageCount - 1;
+    // return _pageController.hasClients && (_pageController.page ?? 0) >= 1;
   }
 
   @override
@@ -56,7 +71,9 @@ class _QuizScreenState extends State<QuizScreen> {
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut)
                               .then((value) {
-                            setState(() {});
+                            setState(() {
+                              setPage(currentPage - 1);
+                            });
                           });
                         },
                   child: Text("Back"),
@@ -77,7 +94,9 @@ class _QuizScreenState extends State<QuizScreen> {
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut)
                               .then((value) {
-                            setState(() {});
+                            setState(() {
+                              setPage(currentPage + 1);
+                            });
                           });
                         },
                   child: Text("Next"),
@@ -87,21 +106,43 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
           Expanded(
             child: PageView(
+                physics: const NeverScrollableScrollPhysics(),
               controller: _pageController,
               children: [
-                QuizQuestion(
+                MCQuestion(
                   question: {
+                    "questionTitle": "Real Question",
+                    "questionBody": "Sigma Sigma on the Wall, who'se the most Skibidi of them all?",
                     "answers": [
                       {"answerBody": "Badeebadoo"},
                       {"answerBody": "Gyatlers"},
                       {"answerBody": "Rizzlers"},
                       {"answerBody": "Sigmas"},
-                      {"answerBody": "Gooners"},
+                      {"answerBody": "Gooners", "answerIcon": "clean"},
+                      {"answerBody": "Rizzlers"},
+                      {"answerBody": "Sigmas"},
+                      {"answerBody": "Gooners", "answerIcon": "clean"},
                     ]
                   },
                 ),
-                QuizQuestion(
+                TfQuestion(
                   question: {},
+                ),
+                MCQuestion(
+                  question: {
+                    "questionTitle": "Real Question",
+                    "questionBody": "Sigma Sigma on the Wall, who'se the most Skibidi of them all?",
+                    "answers": [
+                      {"answerBody": "Badeebadoo"},
+                      {"answerBody": "Gyatlers"},
+                      {"answerBody": "Rizzlers"},
+                      {"answerBody": "Sigmas"},
+                      {"answerBody": "Gooners", "answerIcon": "clean"},
+                      {"answerBody": "Rizzlers"},
+                      {"answerBody": "Sigmas"},
+                      {"answerBody": "Gooners", "answerIcon": "clean"},
+                    ]
+                  },
                 ),
               ],
             ),

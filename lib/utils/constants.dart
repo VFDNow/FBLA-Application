@@ -46,10 +46,10 @@ class Constants {
 
   static const Map<String, IconData> questionIconStringMap = {
     "star": Icons.star,
-    "check": Icons.check,
+    "dash": Icons.dashboard,
     "token": Icons.token,
     "bold": Icons.bolt,
-    "tornado": Icons.tornado,
+    "clean": Icons.clean_hands,
     "cookie": Icons.cookie,
     "cake": Icons.cake,
     "computer": Icons.computer,

@@ -2,15 +2,15 @@ import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
 import 'package:flutter/material.dart';
 
-class QuizQuestion extends StatefulWidget {
-  const QuizQuestion({super.key, required this.question});
+class MCQuestion extends StatefulWidget {
+  const MCQuestion({super.key, required this.question});
 
   final Map<String, dynamic> question;
   @override
-  _QuizQuestionState createState() => _QuizQuestionState();
+  _MCQuestionState createState() => _MCQuestionState();
 }
 
-class _QuizQuestionState extends State<QuizQuestion> {
+class _MCQuestionState extends State<MCQuestion> {
   @override
   Widget build(BuildContext context) {
     var answers = widget.question['answers'] as List<dynamic>?;
@@ -35,7 +35,7 @@ class _QuizQuestionState extends State<QuizQuestion> {
             Expanded(
               child: Center(
                 child: Text(questionBody ?? 'Question Body',
-                    style: Theme.of(context).textTheme.bodyLarge),
+                    style: Theme.of(context).textTheme.headlineLarge),
               ),
             ),
             SizedBox(
