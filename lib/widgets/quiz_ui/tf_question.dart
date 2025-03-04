@@ -28,8 +28,22 @@ class _TFQuestionState extends State<TfQuestion> {
             ),
             SizedBox(
               height: answersHeight,
-              child: Center(
-                child: Text("True or False"),
+              width: double.infinity,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: QuizAnswer(
+                      body: 'True',
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  Expanded(
+                    child: QuizAnswer(
+                      body: 'False',
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ],
               )
             ),
           ],
