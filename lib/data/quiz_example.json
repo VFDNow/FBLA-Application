@@ -48,7 +48,7 @@
             "questionType": "TrueFalse",
             "questionTitle": "What is the evaluation of this text here?",
             "questionBody": "The correct answer is True.",
-            "answer": true
+            "correctAnswer": true
         },
         {
             "questionId": 2,
