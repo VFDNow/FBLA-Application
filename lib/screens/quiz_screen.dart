@@ -1,6 +1,13 @@
 import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
-import 'package:flutter/material.dart';
+import 'package:fbla_application/widgets/error_screen.dart';
+import 'package:flutter/material.dart' hide ErrorWidget;
+
+class QuizScreenArgs {
+  final Map<String, dynamic> quiz;
+
+  const QuizScreenArgs({required this.quiz});
+}
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -12,6 +19,7 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   late PageController _pageController;
   int currentPage = 0;
+  bool allowTraversal = true;
 
   //TEMPORARY
   int pageCount = 3;
@@ -43,15 +51,39 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   bool get _isLastPage {
-    return currentPage >= pageCount - 1;
+    return currentPage >= pageCount - 2;
     // return _pageController.hasClients && (_pageController.page ?? 0) >= 1;
+  }
+
+  List<Widget> constructQuestions(quesitons) {
+    List<Widget> questions = quesitons.map<Widget>((question) {
+      if (question["questionType"] == "MC") {
+        return MCQuestion(question: question);
+      } else if (question["questionType"] == "TF") {
+        return TfQuestion(question: question);
+      }
+      return Container();
+    }).toList();
+    return questions;
   }
 
   @override
   Widget build(BuildContext context) {
+    QuizScreenArgs args;
+    try {
+      args = ModalRoute.of(context)!.settings.arguments as QuizScreenArgs;
+    } catch (error) {
+      return ErrorWidget(errorMessage: "Error Loading Quiz");
+    }
+
+    final List<Widget> questions = constructQuestions(args.quiz["questions"]);
+    setState(() {
+      allowTraversal = args.quiz["allowTraversal"] ?? true;
+    });
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz Name'),
+        title: Text(args.quiz["quizName"] ?? "Quiz Name"),
       ),
       body: Column(
         children: [
@@ -62,88 +94,59 @@ class _QuizScreenState extends State<QuizScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(
-                  onPressed: _isFirstPage
-                      ? null
-                      : () {
-                          _pageController
-                              .previousPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut)
-                              .then((value) {
-                            setState(() {
-                              setPage(currentPage - 1);
-                            });
-                          });
-                        },
-                  child: Text("Back"),
-                ),
+                (allowTraversal)
+                    ? ElevatedButton(
+                        onPressed: _isFirstPage
+                            ? null
+                            : () {
+                                setState(() {
+                                  setPage(currentPage - 1);
+                                });
+                                _pageController
+                                    .previousPage(
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut)
+                                    .then((value) {});
+                              },
+                        child: Text("Back"),
+                      )
+                    : Container(),
                 Center(
                   child: Text(
-                    'Question Title',
+                    args.quiz["questions"][currentPage]["questionTitle"] ??
+                        "Question Name",
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: _isLastPage
-                      ? null
-                      : () {
-                          _pageController
-                              .nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut)
-                              .then((value) {
-                            setState(() {
-                              setPage(currentPage + 1);
-                            });
-                          });
-                        },
-                  child: Text("Next"),
-                ),
+                (allowTraversal)
+                    ? ElevatedButton(
+                        onPressed: _isLastPage
+                            ? null
+                            : () {
+                                setState(() {
+                                  setPage(currentPage + 1);
+                                });
+                                _pageController
+                                    .nextPage(
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        curve: Curves.easeInOut)
+                                    .then((value) {});
+                              },
+                        child: Text("Next"),
+                      )
+                    : Container(),
               ],
             ),
           ),
           Expanded(
             child: PageView(
-                physics: const NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               controller: _pageController,
               children: [
-                MCQuestion(
-                  question: {
-                    "questionTitle": "Real Question",
-                    "questionBody": "Sigma Sigma on the Wall, who'se the most Skibidi of them all?",
-                    "answers": [
-                      {"answerBody": "Badeebadoo"},
-                      {"answerBody": "Gyatlers"},
-                      {"answerBody": "Rizzlers"},
-                      {"answerBody": "Sigmas"},
-                      {"answerBody": "Gooners", "answerIcon": "clean"},
-                      {"answerBody": "Rizzlers"},
-                      {"answerBody": "Sigmas"},
-                      {"answerBody": "Gooners", "answerIcon": "clean"},
-                    ]
-                  },
-                ),
-                TfQuestion(
-                  question: {},
-                ),
-                MCQuestion(
-                  question: {
-                    "questionTitle": "Real Question",
-                    "questionBody": "Sigma Sigma on the Wall, who'se the most Skibidi of them all?",
-                    "answers": [
-                      {"answerBody": "Badeebadoo"},
-                      {"answerBody": "Gyatlers"},
-                      {"answerBody": "Rizzlers"},
-                      {"answerBody": "Sigmas"},
-                      {"answerBody": "Gooners", "answerIcon": "clean"},
-                      {"answerBody": "Rizzlers"},
-                      {"answerBody": "Sigmas"},
-                      {"answerBody": "Gooners", "answerIcon": "clean"},
-                    ]
-                  },
-                ),
+                ...questions,
               ],
             ),
           ),

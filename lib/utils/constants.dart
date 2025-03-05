@@ -54,6 +54,8 @@ class Constants {
     "cake": Icons.cake,
     "computer": Icons.computer,
     "person": Icons.person,
-    "flutter": Icons.flutter_dash
+    "flutter": Icons.flutter_dash,
+    "check": Icons.check,
+    "x": Icons.close,
   };
 }

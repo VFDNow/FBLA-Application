@@ -23,7 +23,7 @@ class _MCQuestionState extends State<MCQuestion> {
         var crossAxisAmount = 2;
         if (answers == null) {
           crossAxisAmount == 1;
-        }  else if (answers.length <= 1) {
+        } else if (answers.length <= 1) {
           crossAxisAmount == 1;
         }
         if (constraints.maxWidth < 600) {
@@ -33,9 +33,15 @@ class _MCQuestionState extends State<MCQuestion> {
         return Column(
           children: [
             Expanded(
-              child: Center(
-                child: Text(questionBody ?? 'Question Body',
-                    style: Theme.of(context).textTheme.headlineLarge),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    questionBody ?? 'Question Body',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             ),
             SizedBox(
@@ -67,7 +73,8 @@ class _MCQuestionState extends State<MCQuestion> {
                     return QuizAnswer(
                       body: answerData['answerBody'] ?? 'Answer ${index + 1}',
                       iconName: icon ?? 'star',
-                      color: Constants.quizColors[index % Constants.quizColors.length],
+                      color: Constants
+                          .quizColors[index % Constants.quizColors.length],
                     );
                   }
 

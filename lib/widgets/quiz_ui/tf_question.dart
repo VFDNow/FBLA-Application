@@ -18,35 +18,42 @@ class _TFQuestionState extends State<TfQuestion> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final answersHeight = constraints.maxHeight / 1.6;
-        return Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Text(questionBody ?? 'Question Body',
-                    style: Theme.of(context).textTheme.headlineLarge),
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Text(questionBody ?? 'Question Body',
+                        style: Theme.of(context).textTheme.headlineLarge),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(
-              height: answersHeight,
-              width: double.infinity,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: QuizAnswer(
-                      body: 'True',
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                  Expanded(
-                    child: QuizAnswer(
-                      body: 'False',
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                ],
-              )
-            ),
-          ],
+              SizedBox(
+                  height: answersHeight,
+                  width: double.infinity,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: QuizAnswer(
+                          body: 'True',
+                          iconName: "check",
+                          color: Constants.quizColors[1],
+                        ),
+                      ),
+                      Expanded(
+                        child: QuizAnswer(
+                          body: 'False',
+                          iconName: "x",
+                          color: Constants.quizColors[0],
+                        ),
+                      ),
+                    ],
+                  )),
+            ],
+          ),
         );
       },
     );
