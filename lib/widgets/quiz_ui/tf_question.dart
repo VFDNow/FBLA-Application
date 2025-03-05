@@ -3,9 +3,10 @@ import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
 import 'package:flutter/material.dart';
 
 class TfQuestion extends StatefulWidget {
-  const TfQuestion({super.key, required this.question});
+  const TfQuestion({super.key, required this.question, required this.onAnswer});
 
   final Map<String, dynamic> question;
+  final Function onAnswer;
   @override
   _TFQuestionState createState() => _TFQuestionState();
 }

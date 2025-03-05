@@ -1,3 +1,4 @@
+import 'package:fbla_application/utils/grader.dart';
 import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
 import 'package:fbla_application/widgets/error_screen.dart';
@@ -16,10 +17,15 @@ class QuizScreen extends StatefulWidget {
   _QuizScreenState createState() => _QuizScreenState();
 }
 
+enum QuestionState { unanswered, grading, correct, incorrect }
+
 class _QuizScreenState extends State<QuizScreen> {
   late PageController _pageController;
   int currentPage = 0;
   bool allowTraversal = true;
+  QuestionState currentState = QuestionState.unanswered;
+
+  Map<String, dynamic>? userAnswers = <String, dynamic>{};
 
   //TEMPORARY
   int pageCount = 3;
@@ -37,6 +43,28 @@ class _QuizScreenState extends State<QuizScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    onAnswer = (question, answer) {
+      if (allowTraversal) {
+        userAnswers?[question["questionId"]] = answer;
+      } else {
+        if (QuestionState.unanswered != currentState) {
+          return;
+        }
+
+        setState(() {
+          currentState = QuestionState.grading;
+        });
+
+        Map<String, dynamic> answerTmp = {question["questionId"]: answer};
+        Grader().gradeQuestion(question, answerTmp).then((value) {
+          setState(() {
+            currentState = value
+                ? QuestionState.correct
+                : QuestionState.incorrect;
+          });
+        });
+      }
+    };
   }
 
   @override
@@ -55,12 +83,14 @@ class _QuizScreenState extends State<QuizScreen> {
     // return _pageController.hasClients && (_pageController.page ?? 0) >= 1;
   }
 
+  late Function onAnswer;
+
   List<Widget> constructQuestions(quesitons) {
     List<Widget> questions = quesitons.map<Widget>((question) {
       if (question["questionType"] == "MC") {
-        return MCQuestion(question: question);
+        return MCQuestion(question: question, onAnswer: onAnswer,);
       } else if (question["questionType"] == "TF") {
-        return TfQuestion(question: question);
+        return TfQuestion(question: question, onAnswer: onAnswer,);
       }
       return Container();
     }).toList();
@@ -80,6 +110,36 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       allowTraversal = args.quiz["allowTraversal"] ?? true;
     });
+
+    questionArea(context) {
+      switch (currentState) {
+        case QuestionState.unanswered:
+          return Expanded(
+            child: PageView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _pageController,
+              children: [
+                ...questions,
+              ],
+            ),
+          );
+        case QuestionState.grading:
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        case QuestionState.correct:
+          return Center(
+            child: Text("Correct!"),
+          );
+        case QuestionState.incorrect:
+          return Center(
+            child: Text("Incorrect!"),
+          );
+      }
+      
+    }
+
+    
 
     return Scaffold(
       appBar: AppBar(
@@ -141,15 +201,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ],
             ),
           ),
-          Expanded(
-            child: PageView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: _pageController,
-              children: [
-                ...questions,
-              ],
-            ),
-          ),
+          questionArea(context),
         ],
       ),
     );

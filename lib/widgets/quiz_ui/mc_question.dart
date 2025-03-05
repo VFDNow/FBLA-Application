@@ -3,9 +3,10 @@ import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
 import 'package:flutter/material.dart';
 
 class MCQuestion extends StatefulWidget {
-  const MCQuestion({super.key, required this.question});
+  const MCQuestion({super.key, required this.question, required this.onAnswer});
 
   final Map<String, dynamic> question;
+  final Function onAnswer;
   @override
   _MCQuestionState createState() => _MCQuestionState();
 }
@@ -14,7 +15,6 @@ class _MCQuestionState extends State<MCQuestion> {
   @override
   Widget build(BuildContext context) {
     var answers = widget.question['answers'] as List<dynamic>?;
-    var questionTitle = widget.question['questionTitle'];
     var questionBody = widget.question['questionBody'];
 
     return LayoutBuilder(
