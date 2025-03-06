@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:fbla_application/utils/constants.dart';
-import 'package:flutter/material.dart';
+import 'package:fbla_application/widgets/error_screen.dart';
+import 'package:flutter/material.dart' hide ErrorWidget;
 
 class ClassHomeArgs {
   final String classId;
@@ -26,7 +27,7 @@ class _ClassHomeState extends State<ClassHome> {
       args = ModalRoute.of(context)!.settings.arguments as ClassHomeArgs;
     } catch (error) {
       return Scaffold(
-        body: Center(child: Text("Error loading class.")),
+        body: ErrorWidget(errorMessage: "Error Loading Class"),
       );
     }
 
@@ -72,7 +73,7 @@ class _ClassHomeState extends State<ClassHome> {
                       "authors": ["Author A", "Author B"],
                       "questions": [
                         {
-                          "questionId": 0,
+                          "questionId": '0',
                           "questionType": "MC",
                           "questionTitle":
                               "What is the evaluation of this text here?",
@@ -107,7 +108,7 @@ class _ClassHomeState extends State<ClassHome> {
                           ]
                         },
                         {
-                          "questionId": 1,
+                          "questionId": "1",
                           "questionType": "TrueFalse",
                           "questionTitle":
                               "What is the evaluation of this text here?",
@@ -115,7 +116,7 @@ class _ClassHomeState extends State<ClassHome> {
                           "correctAnswer": true
                         },
                         {
-                          "questionId": 2,
+                          "questionId": "2",
                           "questionType": "ShortAnswer",
                           "questionTitle":
                               "What is the evaluation of this text here?",

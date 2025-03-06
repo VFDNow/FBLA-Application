@@ -42,8 +42,8 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
-    onAnswer = (question, answer) {
+    _pageController = PageController(initialPage: 0);
+    onAnswer = (Map<String, dynamic> question, answer) {
       if (allowTraversal) {
         userAnswers?[question["questionId"]] = answer;
       } else {
@@ -55,17 +55,137 @@ class _QuizScreenState extends State<QuizScreen> {
           currentState = QuestionState.grading;
         });
 
-        print("About to edge");
-
-        Map<String, dynamic> answerTmp = {question["questionId"]: answer};
+        Map<String, dynamic> answerTmp = {
+          question["questionId"].toString(): answer
+        };
         Grader().gradeQuestion(question, answerTmp).then((value) {
-          print("Skibid hawk tuah hawk goon? $value");
           setState(() {
-            currentState = value
-                ? QuestionState.correct
-                : QuestionState.incorrect;
+            currentState =
+                value ? QuestionState.correct : QuestionState.incorrect;
           });
         });
+      }
+    };
+    questionArea = (context, questions) {
+      switch (currentState) {
+        case QuestionState.unanswered:
+          return Expanded(
+            child: PageView(
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) {
+                setPage(index);
+              },
+              controller: _pageController,
+              children: [
+                ...questions,
+              ],
+            ),
+          );
+        case QuestionState.grading:
+          return Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text("Grading..."),
+                  CircularProgressIndicator(),
+                ],
+              ),
+            ),
+          );
+        case QuestionState.correct:
+          return Expanded(
+            child: Container(
+              color: Colors.green,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    currentState = QuestionState.unanswered;
+                    if (!_isLastPage) {
+                      setPage(currentPage + 1);
+                      Future.delayed(Duration(milliseconds: 50), () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      });
+                    }
+                  });
+                },
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 3,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                        size: 100,
+                      ),
+                      Text("Correct!",
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(color: Colors.white)),
+                      Text("Press anywhere to continue.",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        case QuestionState.incorrect:
+          return Expanded(
+            child: Container(
+              color: Colors.red,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    currentState = QuestionState.unanswered;
+                    if (!_isLastPage) {
+                      setPage(currentPage + 1);
+                      Future.delayed(Duration(milliseconds: 50), () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      });
+                    }
+                  });
+                },
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 3,
+                    children: [
+                      Icon(
+                        Icons.cancel,
+                        color: Colors.white,
+                        size: 100,
+                      ),
+                      Text("Incorrect!",
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(color: Colors.white)),
+                      Text("Press anywhere to continue.",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
       }
     };
   }
@@ -78,22 +198,27 @@ class _QuizScreenState extends State<QuizScreen> {
 
   bool get _isFirstPage {
     return currentPage <= 0;
-    // return _pageController.hasClients && (_pageController.page ?? 0) <= 0;
   }
 
   bool get _isLastPage {
     return currentPage >= pageCount - 2;
-    // return _pageController.hasClients && (_pageController.page ?? 0) >= 1;
   }
 
   late Function onAnswer;
+  late Function questionArea;
 
   List<Widget> constructQuestions(quesitons) {
     List<Widget> questions = quesitons.map<Widget>((question) {
       if (question["questionType"] == "MC") {
-        return MCQuestion(question: question, onAnswer: onAnswer,);
+        return MCQuestion(
+          question: question,
+          onAnswer: onAnswer,
+        );
       } else if (question["questionType"] == "TF") {
-        return TfQuestion(question: question, onAnswer: onAnswer,);
+        return TfQuestion(
+          question: question,
+          onAnswer: onAnswer,
+        );
       }
       return Container();
     }).toList();
@@ -113,36 +238,6 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       allowTraversal = args.quiz["allowTraversal"] ?? true;
     });
-
-    questionArea(context) {
-      switch (currentState) {
-        case QuestionState.unanswered:
-          return Expanded(
-            child: PageView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: _pageController,
-              children: [
-                ...questions,
-              ],
-            ),
-          );
-        case QuestionState.grading:
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        case QuestionState.correct:
-          return Center(
-            child: Text("Correct!"),
-          );
-        case QuestionState.incorrect:
-          return Center(
-            child: Text("Incorrect!"),
-          );
-      }
-      
-    }
-
-    
 
     return Scaffold(
       appBar: AppBar(
@@ -204,7 +299,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ],
             ),
           ),
-          questionArea(context),
+          questionArea(context, questions),
         ],
       ),
     );

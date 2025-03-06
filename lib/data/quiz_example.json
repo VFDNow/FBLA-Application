@@ -10,7 +10,7 @@
     ],
     "questions": [
         {
-            "questionId": 0,
+            "questionId": "0",
             "questionType": "MC",
             "questionTitle": "What is the evaluation of this text here?",
             "questionBody": "The correct answer is the 1st and second option.",
@@ -46,14 +46,14 @@
             ]
         },
         {
-            "questionId": 1,
+            "questionId": "1",
             "questionType": "TrueFalse",
             "questionTitle": "What is the evaluation of this text here?",
             "questionBody": "The correct answer is True.",
             "correctAnswer": true
         },
         {
-            "questionId": 2,
+            "questionId": "2",
             "questionType": "ShortAnswer",
             "questionTitle": "What is the evaluation of this text here?",
             "questionBody": "The correct answer is abcdefg.",

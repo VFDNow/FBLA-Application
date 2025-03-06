@@ -4,8 +4,8 @@ import 'package:firebase_vertexai/firebase_vertexai.dart';
 class Grader {
   Grader();
 
-  Future<List<bool>> gradeQuiz(Map<String, dynamic> quiz,
-      Map<String, dynamic> userAnswers) async {
+  Future<List<bool>> gradeQuiz(
+      Map<String, dynamic> quiz, Map<String, dynamic> userAnswers) async {
     var scores = <bool>[];
 
     for (var question in quiz['questions']) {
@@ -16,9 +16,9 @@ class Grader {
     return scores;
   }
 
-  Future<bool> gradeQuestion(Map<String, dynamic> question,
-      Map<String, dynamic> userAnswers) async {
-    final questionId = question['questionId'];
+  Future<bool> gradeQuestion(
+      Map<String, dynamic> question, Map<String, dynamic> userAnswers) async {
+    final questionId = question['questionId'] as String;
     if (!userAnswers.containsKey(questionId)) {
       return false;
     }
@@ -27,11 +27,10 @@ class Grader {
     final questionType = _getQuestionType(question['questionType'] as String);
 
     // If no correct answer is provided, use AI to grade
-    if (question['correctAnswer'] == null && question['correctAnswers'] == null) {
+    if (question['correctAnswer'] == null &&
+        question['correctAnswers'] == null) {
       return await _gradeWithAi(question, userAnswer);
     }
-
-    print("Gooning!");
 
     // If correct answer is provided, go based on question type
 
@@ -53,18 +52,17 @@ class Grader {
     }
   }
 
-  Future<bool> _gradeWithAi(Map<String, dynamic> question,
-      dynamic userAnswer) async {
+  Future<bool> _gradeWithAi(
+      Map<String, dynamic> question, dynamic userAnswer) async {
     // Check if we have a correct answer to compare against
-    var promptText = question.containsKey('correctAnswer') ?
-            '''
+    var promptText = question.containsKey('correctAnswer')
+        ? '''
               Correct Answer or Criteria: "${question['correctAnswer']}"
               User Answer: "$userAnswer"
               
               Is the user's answer correct? Give leeway for typos. Respond with only "true" or "false".
             '''
-        :
-            '''
+        : '''
               Question title: "${question['questionTitle']}"
               Question body: "${question['questionBody']}"
               User answer: "$userAnswer"
@@ -73,13 +71,15 @@ class Grader {
             ''';
 
     // Initialize the Vertex AI service and the generative model
-    final model = FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash');
+    final model =
+        FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash');
     final prompt = [Content.text(promptText)];
 
     // Decipher the response
     final response = await model.generateContent(prompt);
 
-    return response.text != null && response.text!.toLowerCase().contains('true');
+    return response.text != null &&
+        response.text!.toLowerCase().contains('true');
   }
 
   QuestionType _getQuestionType(String type) {
@@ -96,8 +96,6 @@ class Grader {
         throw Exception('Unknown question type: $type');
     }
   }
-
-
 }
 
 enum QuestionType {
