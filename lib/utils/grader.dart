@@ -18,7 +18,7 @@ class Grader {
 
   Future<bool> gradeQuestion(Map<String, dynamic> question,
       Map<String, dynamic> userAnswers) async {
-    final questionId = question['id'];
+    final questionId = question['questionId'];
     if (!userAnswers.containsKey(questionId)) {
       return false;
     }
@@ -31,6 +31,8 @@ class Grader {
       return await _gradeWithAi(question, userAnswer);
     }
 
+    print("Gooning!");
+
     // If correct answer is provided, go based on question type
 
     switch (questionType) {
@@ -41,7 +43,7 @@ class Grader {
           return userAnswer == question['correctAnswer'];
         }
       case QuestionType.trueFalse:
-        return userAnswer == question['correctAnswer'];
+        return userAnswer == question['correctAnswer'] as String;
       case QuestionType.shortAnswer:
         // Use AI to grade short answer
         return await _gradeWithAi(question, userAnswer);
@@ -84,11 +86,11 @@ class Grader {
     switch (type) {
       case 'MC':
         return QuestionType.multipleChoice;
-      case 'TrueFalse':
+      case 'TF':
         return QuestionType.trueFalse;
-      case 'ShortAnswer':
+      case 'SA':
         return QuestionType.shortAnswer;
-      case 'LongAnswer':
+      case 'LA':
         return QuestionType.longAnswer;
       default:
         throw Exception('Unknown question type: $type');

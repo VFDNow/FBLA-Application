@@ -58,7 +58,7 @@
             "questionTitle": "What is the evaluation of this text here?",
             "questionBody": "The correct answer is abcdefg.",
             "singleWord": true,
-            "answers": [
+            "correctAnswers": [
                 "abcdefg"
             ]
         }

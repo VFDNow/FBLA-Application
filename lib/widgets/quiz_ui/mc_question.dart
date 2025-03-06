@@ -71,6 +71,10 @@ class _MCQuestionState extends State<MCQuestion> {
                     }
 
                     return QuizAnswer(
+                      onTap: () {
+                        widget.onAnswer(
+                            widget.question, answerData['answerId']);
+                      },
                       body: answerData['answerBody'] ?? 'Answer ${index + 1}',
                       iconName: icon ?? 'star',
                       color: Constants
@@ -79,6 +83,9 @@ class _MCQuestionState extends State<MCQuestion> {
                   }
 
                   return QuizAnswer(
+                    onTap: () {
+                      widget.onAnswer(widget.question, '${index + 1}');
+                    },
                     body: 'Answer ${index + 1}',
                     iconName: 'star',
                   );

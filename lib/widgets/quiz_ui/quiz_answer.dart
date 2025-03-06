@@ -9,10 +9,12 @@ class QuizAnswer extends StatefulWidget {
   final String? iconName;
   final Color? color;
   final TextStyle? textStyle;
+  final Function onTap;
 
   const QuizAnswer({
     Key? key,
     required this.body,
+    required this.onTap,
     this.iconName,
     this.color,
     this.textStyle,
@@ -33,7 +35,7 @@ class _QuizAnswerState extends State<QuizAnswer> {
           splashColor: widget.color?.withValues(alpha: 0.8),
           highlightColor: widget.color?.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(8),
-          onTap: () {},
+          onTap: widget.onTap as void Function()? ?? () {},
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

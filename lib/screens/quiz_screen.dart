@@ -55,8 +55,11 @@ class _QuizScreenState extends State<QuizScreen> {
           currentState = QuestionState.grading;
         });
 
+        print("About to edge");
+
         Map<String, dynamic> answerTmp = {question["questionId"]: answer};
         Grader().gradeQuestion(question, answerTmp).then((value) {
+          print("Skibid hawk tuah hawk goon? $value");
           setState(() {
             currentState = value
                 ? QuestionState.correct
