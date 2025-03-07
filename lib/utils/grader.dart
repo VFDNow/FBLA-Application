@@ -42,7 +42,7 @@ class Grader {
           return userAnswer == question['correctAnswer'];
         }
       case QuestionType.trueFalse:
-        return userAnswer == question['correctAnswer'] as String;
+        return userAnswer == question['correctAnswer'];
       case QuestionType.shortAnswer:
         // Use AI to grade short answer
         return await _gradeWithAi(question, userAnswer);
@@ -55,17 +55,34 @@ class Grader {
   Future<bool> _gradeWithAi(
       Map<String, dynamic> question, dynamic userAnswer) async {
     // Check if we have a correct answer to compare against
+
+    var answer;
+    switch (_getQuestionType(question["questionType"])) {
+      case QuestionType.multipleChoice:
+        answer = _getAnswer(question, userAnswer);
+        break;
+      case QuestionType.trueFalse:
+        answer = question['correctAnswer'];
+        break;
+      case QuestionType.shortAnswer:
+        answer = question['answers'];
+        break;
+      case QuestionType.longAnswer:
+        answer = question['answers'];
+        break;
+    }
+
     var promptText = question.containsKey('correctAnswer')
         ? '''
               Correct Answer or Criteria: "${question['correctAnswer']}"
-              User Answer: "$userAnswer"
+              User Answer: "$answer"
               
               Is the user's answer correct? Give leeway for typos. Respond with only "true" or "false".
             '''
         : '''
               Question title: "${question['questionTitle']}"
               Question body: "${question['questionBody']}"
-              User answer: "$userAnswer"
+              User answer: "$answer"
               
               Is the user's answer correct? Give leeway for typos. Respond with only "true" or "false".
             ''';
@@ -77,7 +94,6 @@ class Grader {
 
     // Decipher the response
     final response = await model.generateContent(prompt);
-
     return response.text != null &&
         response.text!.toLowerCase().contains('true');
   }
@@ -95,6 +111,11 @@ class Grader {
       default:
         throw Exception('Unknown question type: $type');
     }
+  }
+
+  Map<String, dynamic> _getAnswer(Map<String, dynamic> question, int answerId) {
+    final answers = question['answers'] as List;
+    return answers.firstWhere((answer) => answer['answerId'] == answerId);
   }
 }
 

@@ -40,6 +40,15 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  final args = ModalRoute.of(context)?.settings.arguments as QuizScreenArgs?;
+  if (args != null) {
+    pageCount = args.quiz["questions"].length;
+  }
+}
+
+  @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);

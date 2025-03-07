@@ -76,48 +76,48 @@ class _ClassHomeState extends State<ClassHome> {
                           "questionId": '0',
                           "questionType": "MC",
                           "questionTitle":
-                              "What is the evaluation of this text here?",
+                              "Nerds",
                           "questionBody":
-                              "The correct answer is the 1st and second option.",
+                              "What is the capital of Wisconsin?",
                           "embeds": [
                             "https://media.istockphoto.com/id/839295596/photo/six-pre-teen-friends-piggybacking-in-a-park-close-up-portrait.jpg?s=612x612&w=0&k=20&c=MWkFYzpRSvO1dRql3trV4k6ECO-rTy4HgF8OxrtUkH8=",
                             "FiREBASE STORAGE IMAGE"
                           ],
-                          "correctAnswers": [0, 1],
+                          "correctAnswers": [0],
                           "answers": [
                             {
                               "answerId": 0,
-                              "answerBody": "Answer A",
+                              "answerBody": "Madison",
                               "answerIcon": "iconName"
                             },
                             {
                               "answerId": 1,
-                              "answerBody": "Answer B",
+                              "answerBody": "Milwaukee",
                               "answerIcon": "iconName"
                             },
                             {
                               "answerId": 2,
-                              "answerBody": "Answer C",
+                              "answerBody": "Ozaukee",
                               "answerIcon": "iconName"
                             },
                             {
                               "answerId": 3,
-                              "answerBody": "Answer D",
+                              "answerBody": "Washington D.C.",
                               "answerIcon": "iconName"
                             }
                           ]
                         },
                         {
                           "questionId": "1",
-                          "questionType": "TrueFalse",
+                          "questionType": "TF",
                           "questionTitle":
                               "What is the evaluation of this text here?",
                           "questionBody": "The correct answer is True.",
-                          "correctAnswer": true
+                          // "correctAnswer": true
                         },
                         {
                           "questionId": "2",
-                          "questionType": "ShortAnswer",
+                          "questionType": "SA",
                           "questionTitle":
                               "What is the evaluation of this text here?",
                           "questionBody": "The correct answer is abcdefg.",

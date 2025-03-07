@@ -40,7 +40,7 @@ class _TFQuestionState extends State<TfQuestion> {
                       Expanded(
                         child: QuizAnswer(
                           onTap: () {
-                            widget.onAnswer(widget.question, 'True');
+                            widget.onAnswer(widget.question, true);
                           },  
                           body: 'True',
                           iconName: "check",
@@ -50,7 +50,7 @@ class _TFQuestionState extends State<TfQuestion> {
                       Expanded(
                         child: QuizAnswer(
                           onTap: () {
-                            widget.onAnswer(widget.question, 'False');
+                            widget.onAnswer(widget.question, false);
                           },
                           body: 'False',
                           iconName: "x",
