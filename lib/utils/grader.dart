@@ -56,19 +56,19 @@ class Grader {
       Map<String, dynamic> question, dynamic userAnswer) async {
     // Check if we have a correct answer to compare against
 
-    var answer;
-    switch (_getQuestionType(question["questionType"])) {
+    var answer = null;
+    switch (_getQuestionType(question["questionType"] as String)) {
       case QuestionType.multipleChoice:
         answer = _getAnswer(question, userAnswer);
         break;
       case QuestionType.trueFalse:
-        answer = question['correctAnswer'];
+        answer = userAnswer;
         break;
       case QuestionType.shortAnswer:
-        answer = question['answers'];
+        answer = userAnswer;
         break;
       case QuestionType.longAnswer:
-        answer = question['answers'];
+        answer = userAnswer;
         break;
     }
 
@@ -122,7 +122,6 @@ class Grader {
 enum QuestionType {
   multipleChoice,
   trueFalse,
-
   shortAnswer,
   longAnswer
 }
