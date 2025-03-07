@@ -56,7 +56,8 @@ class Grader {
       Map<String, dynamic> question, dynamic userAnswer) async {
     // Check if we have a correct answer to compare against
 
-    var answer = null;
+    // ignore: prefer_typing_uninitialized_variables
+    var answer;
     switch (_getQuestionType(question["questionType"] as String)) {
       case QuestionType.multipleChoice:
         answer = _getAnswer(question, userAnswer);
@@ -72,9 +73,10 @@ class Grader {
         break;
     }
 
-    var promptText = question.containsKey('correctAnswer')
+    var promptText = question.containsKey('correctAnswer') ||
+            question.containsKey('criteria')
         ? '''
-              Correct Answer or Criteria: "${question['correctAnswer']}"
+              Correct Answer or Criteria: "${question['correctAnswer'] ?? question['correctAnswers'] ?? question['criteria']}"
               User Answer: "$answer"
               
               Is the user's answer correct? Give leeway for typos. Respond with only "true" or "false".
@@ -119,9 +121,4 @@ class Grader {
   }
 }
 
-enum QuestionType {
-  multipleChoice,
-  trueFalse,
-  shortAnswer,
-  longAnswer
-}
+enum QuestionType { multipleChoice, trueFalse, shortAnswer, longAnswer }

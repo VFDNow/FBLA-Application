@@ -75,10 +75,8 @@ class _ClassHomeState extends State<ClassHome> {
                         {
                           "questionId": '0',
                           "questionType": "MC",
-                          "questionTitle":
-                              "Nerds",
-                          "questionBody":
-                              "What is the capital of Wisconsin?",
+                          "questionTitle": "Nerds",
+                          "questionBody": "What is the capital of Wisconsin?",
                           "embeds": [
                             "https://media.istockphoto.com/id/839295596/photo/six-pre-teen-friends-piggybacking-in-a-park-close-up-portrait.jpg?s=612x612&w=0&k=20&c=MWkFYzpRSvO1dRql3trV4k6ECO-rTy4HgF8OxrtUkH8=",
                             "FiREBASE STORAGE IMAGE"
@@ -113,16 +111,25 @@ class _ClassHomeState extends State<ClassHome> {
                           "questionTitle":
                               "What is the evaluation of this text here?",
                           "questionBody": "The correct answer is True.",
-                          // "correctAnswer": true
+                          "correctAnswer": true
                         },
                         {
                           "questionId": "2",
                           "questionType": "SA",
-                          "questionTitle":
-                              "What is the evaluation of this text here?",
-                          "questionBody": "The correct answer is abcdefg.",
+                          "questionTitle": "Wisconsin Capital",
+                          "questionBody": "What is the capital of Wisconsin?",
                           "singleWord": true,
-                          "answers": ["abcdefg"]
+                          "answers": ["Madison"]
+                        },
+                        {
+                          "questionId": "3",
+                          "questionType": "LA",
+                          "questionTitle": "Wisconsin Capital",
+                          "questionBody":
+                              "Write a bit about the capital of Wisconsin?",
+                          "singleWord": true,
+                          "criteria":
+                              "Needs to say the capital is madison, and needs to mention the University of Wisconsin that resides in madison.",
                         }
                       ]
                     })));

@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class SaQuestion extends StatefulWidget {
-  const SaQuestion(
+class LaQuestion extends StatefulWidget {
+  const LaQuestion(
       {super.key,
       required this.question,
       required this.onAnswer,
@@ -13,10 +13,10 @@ class SaQuestion extends StatefulWidget {
   final Function onAnswer;
   final bool allowTraversal;
   @override
-  _SaQuestionState createState() => _SaQuestionState();
+  _LaQuestionState createState() => _LaQuestionState();
 }
 
-class _SaQuestionState extends State<SaQuestion> {
+class _LaQuestionState extends State<LaQuestion> {
   @override
   Widget build(BuildContext context) {
     var questionBody = widget.question['questionBody'];
@@ -40,13 +40,15 @@ class _SaQuestionState extends State<SaQuestion> {
               ),
               SizedBox(
                   height: answersHeight,
-                  width: max(constraints.maxWidth * 0.5, 150),
+                  width: max(constraints.maxWidth * 0.8, 150),
                   child: Column(
                     spacing: 10,
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextField(
+                          maxLines: 5,
+                          minLines: 3,
                           autocorrect: false,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),

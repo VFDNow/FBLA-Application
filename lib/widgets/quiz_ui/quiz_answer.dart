@@ -38,11 +38,11 @@ class _QuizAnswerState extends State<QuizAnswer> {
           onTap: widget.onTap as void Function()? ?? () {},
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    Center(
                       child: (widget.iconName != null &&
                               Constants.questionIconStringMap
                                   .containsKey(widget.iconName))
@@ -66,28 +66,28 @@ class _QuizAnswerState extends State<QuizAnswer> {
                                   : Colors.white,
                             )
                           : Container(),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      widget.body,
-                      style: widget.textStyle ??
-                          Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: (widget.color?.computeLuminance() ??
-                                            Theme.of(context)
-                                                .colorScheme
-                                                .onSecondary
-                                                .computeLuminance()) >
-                                        0.5
-                                    ? Colors.black
-                                    : Colors.white,
-                              ),
                     ),
-                  ),
-                ),
-              ],
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          widget.body,
+                          style: widget.textStyle ??
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: (widget.color?.computeLuminance() ??
+                                                Theme.of(context)
+                                                    .colorScheme
+                                                    .onSecondary
+                                                    .computeLuminance()) >
+                                            0.5
+                                        ? Colors.black
+                                        : Colors.white,
+                                  ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

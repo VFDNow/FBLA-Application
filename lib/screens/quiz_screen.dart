@@ -1,4 +1,5 @@
 import 'package:fbla_application/utils/grader.dart';
+import 'package:fbla_application/widgets/quiz_ui/la_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/sa_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
@@ -28,7 +29,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
   Map<String, dynamic>? userAnswers = <String, dynamic>{};
 
-  //TEMPORARY
   int pageCount = 3;
 
   void setPage(int newPage) {
@@ -41,13 +41,13 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   @override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  final args = ModalRoute.of(context)?.settings.arguments as QuizScreenArgs?;
-  if (args != null) {
-    pageCount = args.quiz["questions"].length;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as QuizScreenArgs?;
+    if (args != null) {
+      pageCount = args.quiz["questions"].length;
+    }
   }
-}
 
   @override
   void initState() {
@@ -77,107 +77,123 @@ void didChangeDependencies() {
       }
     };
 
-
     questionArea = (context, questions) {
-  // Always return a sized container that wraps both PageView and overlay
-  return Expanded(  // This is important to fill the available space in the Column
-    child: Stack(
-      fit: StackFit.expand,  // Make the stack fill its parent
-      children: [
-        // PageView is always built as the base layer
-        PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (index) {
-            setPage(index);
-          },
-          controller: _pageController,
-          children: questions,
+      return Expanded(
+        child: Stack(
+          fit: StackFit.expand, // Make the stack fill its parent
+          children: [
+            PageView(
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) {
+                setPage(index);
+              },
+              controller: _pageController,
+              children: questions,
+            ),
+
+            // Conditional overlays based on state
+            if (currentState == QuestionState.grading)
+              Container(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer, // Semi-transparent background
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text("Grading...", style: TextStyle(color: Colors.white)),
+                      SizedBox(height: 10),
+                      CircularProgressIndicator(),
+                    ],
+                  ),
+                ),
+              ),
+
+            if (currentState == QuestionState.correct)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    currentState = QuestionState.unanswered;
+                    if (!_isLastPage) {
+                      setPage(currentPage + 1);
+                      Future.delayed(Duration(milliseconds: 50), () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      });
+                    }
+                  });
+                },
+                child: Container(
+                  color: Colors.green,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle,
+                            color: Colors.white, size: 100),
+                        Text("Correct!",
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(color: Colors.white)),
+                        Text("Press anywhere to continue.",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            if (currentState == QuestionState.incorrect)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    currentState = QuestionState.unanswered;
+                    if (!_isLastPage) {
+                      setPage(currentPage + 1);
+                      Future.delayed(Duration(milliseconds: 50), () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      });
+                    }
+                  });
+                },
+                child: Container(
+                  color: Colors.red,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.cancel, color: Colors.white, size: 100),
+                        Text("Incorrect!",
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(color: Colors.white)),
+                        Text("Press anywhere to continue.",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-        
-        // Conditional overlays based on state
-        if (currentState == QuestionState.grading)
-          Container(
-            color: Theme.of(context).colorScheme.primaryContainer,  // Semi-transparent background
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text("Grading...", style: TextStyle(color: Colors.white)),
-                  SizedBox(height: 10),
-                  CircularProgressIndicator(),
-                ],
-              ),
-            ),
-          ),
-          
-        if (currentState == QuestionState.correct)
-          GestureDetector(  // Use GestureDetector instead of InkWell for better tap detection
-            onTap: () {
-              setState(() {
-                currentState = QuestionState.unanswered;
-                if (!_isLastPage) {
-                  setPage(currentPage + 1);
-                  Future.delayed(Duration(milliseconds: 50), () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  });
-                }
-              });
-            },
-            child: Container(
-              color: Colors.green,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white, size: 100),
-                    Text("Correct!", style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)),
-                    Text("Press anywhere to continue.", style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        
-        if (currentState == QuestionState.incorrect)
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                currentState = QuestionState.unanswered;
-                if (!_isLastPage) {
-                  setPage(currentPage + 1);
-                  Future.delayed(Duration(milliseconds: 50), () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  });
-                }
-              });
-            },
-            child: Container(
-              color: Colors.red,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.cancel, color: Colors.white, size: 100),
-                    Text("Incorrect!", style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)),
-                    Text("Press anywhere to continue.", style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-};
+      );
+    };
   }
 
   @override
@@ -211,11 +227,16 @@ void didChangeDependencies() {
         );
       } else if (question["questionType"] == "SA") {
         return SaQuestion(
-          question: question, 
+          question: question,
           onAnswer: onAnswer,
-          );
+          allowTraversal: allowTraversal,
+        );
       } else if (question["questionType"] == "LA") {
-        return Container();
+        return LaQuestion(
+          question: question,
+          onAnswer: onAnswer,
+          allowTraversal: allowTraversal,
+        );
       }
       return Container();
     }).toList();
