@@ -1,6 +1,7 @@
 import 'package:fbla_application/utils/grader.dart';
 import 'package:fbla_application/widgets/quiz_ui/la_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
+import 'package:fbla_application/widgets/quiz_ui/quiz_review_screen.dart';
 import 'package:fbla_application/widgets/quiz_ui/sa_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
 import 'package:fbla_application/widgets/error_screen.dart';
@@ -16,18 +17,19 @@ class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
 
   @override
-  _QuizScreenState createState() => _QuizScreenState();
+  QuizScreenState createState() => QuizScreenState();
 }
 
 enum QuestionState { unanswered, grading, correct, incorrect }
 
-class _QuizScreenState extends State<QuizScreen> {
+class QuizScreenState extends State<QuizScreen> {
   late PageController _pageController;
   int currentPage = 0;
   bool allowTraversal = true;
   QuestionState currentState = QuestionState.unanswered;
 
   Map<String, dynamic>? userAnswers = <String, dynamic>{};
+  bool reviewMode = false;
 
   int pageCount = 3;
 
@@ -77,7 +79,7 @@ class _QuizScreenState extends State<QuizScreen> {
       }
     };
 
-    questionArea = (context, questions) {
+    questionArea = (context, questions, quizData) {
       return Expanded(
         child: Stack(
           fit: StackFit.expand, // Make the stack fill its parent
@@ -85,7 +87,9 @@ class _QuizScreenState extends State<QuizScreen> {
             PageView(
               physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) {
-                setPage(index);
+                // setState(() {
+                //   setPage(index);
+                // });
               },
               controller: _pageController,
               children: questions,
@@ -190,6 +194,12 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
               ),
+
+            if (reviewMode)
+              QuizReviewScreen(
+                quizData: quizData,
+                answers: userAnswers!,
+              )
           ],
         ),
       );
@@ -252,7 +262,8 @@ class _QuizScreenState extends State<QuizScreen> {
       return ErrorWidget(errorMessage: "Error Loading Quiz");
     }
 
-    final List<Widget> questions = constructQuestions(args.quiz["questions"]);
+    final questionData = args.quiz["questions"];
+    final List<Widget> questions = constructQuestions(questionData);
     setState(() {
       allowTraversal = args.quiz["allowTraversal"] ?? true;
     });
@@ -275,23 +286,31 @@ class _QuizScreenState extends State<QuizScreen> {
                         onPressed: _isFirstPage
                             ? null
                             : () {
-                                setState(() {
-                                  setPage(currentPage - 1);
-                                });
-                                _pageController
-                                    .previousPage(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut)
-                                    .then((value) {});
+                                if (!reviewMode) {
+                                  setState(() {
+                                    setPage(currentPage - 1);
+                                  });
+                                  _pageController
+                                      .previousPage(
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          curve: Curves.easeInOut)
+                                      .then((value) {});
+                                } else {
+                                  setState(() {
+                                    reviewMode = false;
+                                  });
+                                }
                               },
                         child: Text("Back"),
                       )
                     : Container(),
                 Center(
                   child: Text(
-                    args.quiz["questions"][currentPage]["questionTitle"] ??
-                        "Question Name",
+                    (reviewMode)
+                        ? "Review & Submit"
+                        : questionData[currentPage]["questionTitle"] ??
+                            "Question Name",
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary),
                   ),
@@ -299,17 +318,20 @@ class _QuizScreenState extends State<QuizScreen> {
                 (allowTraversal)
                     ? ElevatedButton(
                         onPressed: _isLastPage
-                            ? null
+                            ? (!reviewMode
+                                ? () {
+                                    setState(() {
+                                      reviewMode = true;
+                                    });
+                                  }
+                                : null)
                             : () {
                                 setState(() {
                                   setPage(currentPage + 1);
                                 });
-                                _pageController
-                                    .nextPage(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeInOut)
-                                    .then((value) {});
+                                _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut);
                               },
                         child: Text("Next"),
                       )
@@ -317,7 +339,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ],
             ),
           ),
-          questionArea(context, questions),
+          questionArea(context, questions, args.quiz),
         ],
       ),
     );

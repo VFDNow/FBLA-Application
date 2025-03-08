@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:flutter/material.dart';
 
 class SaQuestion extends StatefulWidget {
@@ -17,10 +17,37 @@ class SaQuestion extends StatefulWidget {
 }
 
 class _SaQuestionState extends State<SaQuestion> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the controller
+    _controller = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Try to get any existing answer from userAnswers map
+    final questionId = widget.question["questionId"];
+    final quizState = context.findAncestorStateOfType<QuizScreenState>();
+    if (quizState != null &&
+        quizState.userAnswers != null &&
+        quizState.userAnswers!.containsKey(questionId)) {
+      _controller.text = quizState.userAnswers![questionId];
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Clean up controller
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var questionBody = widget.question['questionBody'];
-    var currentAnswer = "";
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -47,13 +74,16 @@ class _SaQuestionState extends State<SaQuestion> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextField(
+                          controller: _controller, // Use the controller
                           autocorrect: false,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'Answer',
                           ),
                           onChanged: (value) {
-                            currentAnswer = value;
+                            if (widget.allowTraversal) {
+                              widget.onAnswer(widget.question, value);
+                            }
                           },
                           onSubmitted: (value) {
                             widget.onAnswer(widget.question, value);
@@ -63,7 +93,8 @@ class _SaQuestionState extends State<SaQuestion> {
                       if (!widget.allowTraversal)
                         ElevatedButton(
                             onPressed: () {
-                              widget.onAnswer(widget.question, currentAnswer);
+                              widget.onAnswer(
+                                  widget.question, _controller.text);
                             },
                             child: Text("Submit")),
                     ],

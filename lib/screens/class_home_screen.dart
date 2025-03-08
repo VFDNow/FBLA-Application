@@ -68,7 +68,7 @@ class _ClassHomeState extends State<ClassHome> {
                       "quizName": "Name",
                       "quizDesc": "Description Here",
                       "shuffleOrder": true,
-                      "allowTraversal": false,
+                      "allowTraversal": true,
                       "allowAIGrading": true,
                       "authors": ["Author A", "Author B"],
                       "questions": [
