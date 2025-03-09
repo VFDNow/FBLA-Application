@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 class QuizReviewScreen extends StatelessWidget {
   const QuizReviewScreen(
-      {super.key, required this.quizData, required this.answers});
+      {super.key,
+      required this.quizData,
+      required this.answers,
+      this.onSubmit});
 
   final Map<String, dynamic> quizData;
   final Map<String, dynamic> answers;
+  final Function? onSubmit;
 
   bool _getAllQuestionsAnswered() {
     try {
@@ -60,17 +64,19 @@ class QuizReviewScreen extends StatelessWidget {
                     Divider(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        _getAllQuestionsAnswered()
-                            ? "All Questions Answered"
-                            : "Not All Questions Answered",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
-                                color: _getAllQuestionsAnswered()
-                                    ? Colors.green
-                                    : Colors.red),
+                      child: Center(
+                        child: Text(
+                          _getAllQuestionsAnswered()
+                              ? "All Questions Answered"
+                              : "Not All Questions Answered",
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                  color: _getAllQuestionsAnswered()
+                                      ? Colors.green
+                                      : Colors.red),
+                        ),
                       ),
                     ),
                   ],
@@ -81,7 +87,8 @@ class QuizReviewScreen extends StatelessWidget {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              // print("Submitting...");
+              onSubmit!(quizData);
             },
             child: const Text("Submit Quiz"),
           ),

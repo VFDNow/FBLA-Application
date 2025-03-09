@@ -1,6 +1,8 @@
+import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/grader.dart';
 import 'package:fbla_application/widgets/quiz_ui/la_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/mc_question.dart';
+import 'package:fbla_application/widgets/quiz_ui/quiz_results_screen.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_review_screen.dart';
 import 'package:fbla_application/widgets/quiz_ui/sa_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
@@ -29,6 +31,7 @@ class QuizScreenState extends State<QuizScreen> {
   QuestionState currentState = QuestionState.unanswered;
 
   Map<String, dynamic>? userAnswers = <String, dynamic>{};
+  Map<String, dynamic> answerData = <String, bool>{};
   bool reviewMode = false;
 
   int pageCount = 3;
@@ -39,6 +42,33 @@ class QuizScreenState extends State<QuizScreen> {
       currentPage = 0;
     } else if (currentPage >= pageCount) {
       currentPage = pageCount - 1;
+    }
+  }
+
+  void traversalSwitchToResults(quizData) {
+    setState(() {
+      currentState = QuestionState.grading;
+    });
+    switchToResults(quizData);
+  }
+
+  void switchToResults(quiz) async {
+    List<bool> scores = [];
+
+    if (allowTraversal) {
+      scores = await Grader().gradeQuiz(quiz, userAnswers ?? {});
+    } else {
+      for (var question in quiz["questions"]) {
+        if (answerData.containsKey(question["questionId"])) {
+          scores.add(answerData[question["questionId"]] ?? false);
+        } else {
+          scores.add(false);
+        }
+      }
+    }
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, Constants.quizResultsRoute,
+          arguments: QuizResultsArgs(quiz: quiz, scores: scores));
     }
   }
 
@@ -57,7 +87,9 @@ class QuizScreenState extends State<QuizScreen> {
     _pageController = PageController(initialPage: 0);
     onAnswer = (Map<String, dynamic> question, answer) {
       if (allowTraversal) {
-        userAnswers?[question["questionId"]] = answer;
+        setState(() {
+          userAnswers?[question["questionId"]] = answer;
+        });
       } else {
         if (QuestionState.unanswered != currentState) {
           return;
@@ -74,6 +106,7 @@ class QuizScreenState extends State<QuizScreen> {
           setState(() {
             currentState =
                 value ? QuestionState.correct : QuestionState.incorrect;
+            answerData[question["questionId"]] = value;
           });
         });
       }
@@ -127,6 +160,8 @@ class QuizScreenState extends State<QuizScreen> {
                           curve: Curves.easeInOut,
                         );
                       });
+                    } else {
+                      switchToResults(quizData);
                     }
                   });
                 },
@@ -168,6 +203,8 @@ class QuizScreenState extends State<QuizScreen> {
                           curve: Curves.easeInOut,
                         );
                       });
+                    } else {
+                      switchToResults(quizData);
                     }
                   });
                 },
@@ -199,6 +236,13 @@ class QuizScreenState extends State<QuizScreen> {
               QuizReviewScreen(
                 quizData: quizData,
                 answers: userAnswers!,
+                onSubmit: (quizData) {
+                  setState(() {
+                    currentState = QuestionState.grading;
+                    reviewMode = false;
+                  });
+                  traversalSwitchToResults(quizData);
+                },
               )
           ],
         ),
@@ -229,11 +273,13 @@ class QuizScreenState extends State<QuizScreen> {
         return MCQuestion(
           question: question,
           onAnswer: onAnswer,
+          currentAnswer: userAnswers?[question["questionId"]],
         );
       } else if (question["questionType"] == "TF") {
         return TfQuestion(
           question: question,
           onAnswer: onAnswer,
+          currentAnswer: userAnswers?[question["questionId"]],
         );
       } else if (question["questionType"] == "SA") {
         return SaQuestion(
@@ -283,7 +329,8 @@ class QuizScreenState extends State<QuizScreen> {
               children: [
                 (allowTraversal)
                     ? ElevatedButton(
-                        onPressed: _isFirstPage
+                        onPressed: (_isFirstPage ||
+                                currentState != QuestionState.unanswered)
                             ? null
                             : () {
                                 if (!reviewMode) {
@@ -317,8 +364,9 @@ class QuizScreenState extends State<QuizScreen> {
                 ),
                 (allowTraversal)
                     ? ElevatedButton(
-                        onPressed: _isLastPage
-                            ? (!reviewMode
+                        onPressed: (_isLastPage)
+                            ? (!reviewMode &&
+                                    currentState == QuestionState.unanswered
                                 ? () {
                                     setState(() {
                                       reviewMode = true;

@@ -1,12 +1,18 @@
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
+import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:flutter/material.dart';
 
 class MCQuestion extends StatefulWidget {
-  const MCQuestion({super.key, required this.question, required this.onAnswer});
+  const MCQuestion(
+      {super.key,
+      required this.question,
+      required this.onAnswer,
+      this.currentAnswer});
 
   final Map<String, dynamic> question;
   final Function onAnswer;
+  final int? currentAnswer;
   @override
   _MCQuestionState createState() => _MCQuestionState();
 }
@@ -79,6 +85,8 @@ class _MCQuestionState extends State<MCQuestion> {
                       iconName: icon ?? 'star',
                       color: Constants
                           .quizColors[index % Constants.quizColors.length],
+                      isSelected: (widget.currentAnswer ?? -1) ==
+                          answerData['answerId'],
                     );
                   }
 

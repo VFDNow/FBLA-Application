@@ -10,6 +10,7 @@ import 'package:fbla_application/utils/auth_screens.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:fbla_application/utils/theme.dart';
+import 'package:fbla_application/widgets/quiz_ui/quiz_results_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -61,6 +62,7 @@ class FBLAApp extends StatelessWidget {
       Constants.joinClassRoute: (context) => JoinClassScreen(),
       Constants.classHomeRoute: (context) => ClassHome(),
       Constants.quizRoute: (context) => QuizScreen(),
+      Constants.quizResultsRoute: (context) => QuizResultsScreen(),
     };
   }
 }

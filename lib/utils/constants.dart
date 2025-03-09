@@ -14,6 +14,7 @@ class Constants {
   static const String joinClassRoute = "/join-class";
   static const String classHomeRoute = "/class-home";
   static const String quizRoute = "/quiz";
+  static const String quizResultsRoute = "/quiz-results";
 
   // External API Routes
   static const String profilePictureRoute =

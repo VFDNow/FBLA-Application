@@ -3,10 +3,15 @@ import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
 import 'package:flutter/material.dart';
 
 class TfQuestion extends StatefulWidget {
-  const TfQuestion({super.key, required this.question, required this.onAnswer});
+  const TfQuestion(
+      {super.key,
+      required this.question,
+      required this.onAnswer,
+      this.currentAnswer});
 
   final Map<String, dynamic> question;
   final Function onAnswer;
+  final bool? currentAnswer;
   @override
   _TFQuestionState createState() => _TFQuestionState();
 }
@@ -41,10 +46,11 @@ class _TFQuestionState extends State<TfQuestion> {
                         child: QuizAnswer(
                           onTap: () {
                             widget.onAnswer(widget.question, true);
-                          },  
+                          },
                           body: 'True',
                           iconName: "check",
                           color: Constants.quizColors[1],
+                          isSelected: (widget.currentAnswer ?? false) == true,
                         ),
                       ),
                       Expanded(
@@ -55,6 +61,7 @@ class _TFQuestionState extends State<TfQuestion> {
                           body: 'False',
                           iconName: "x",
                           color: Constants.quizColors[0],
+                          isSelected: (widget.currentAnswer ?? true) == false,
                         ),
                       ),
                     ],

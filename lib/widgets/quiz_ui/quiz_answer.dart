@@ -10,15 +10,17 @@ class QuizAnswer extends StatefulWidget {
   final Color? color;
   final TextStyle? textStyle;
   final Function onTap;
+  final bool isSelected;
 
   const QuizAnswer({
-    Key? key,
+    super.key,
     required this.body,
     required this.onTap,
     this.iconName,
     this.color,
     this.textStyle,
-  }) : super(key: key);
+    this.isSelected = false,
+  });
 
   @override
   _QuizAnswerState createState() => _QuizAnswerState();
@@ -27,68 +29,75 @@ class QuizAnswer extends StatefulWidget {
 class _QuizAnswerState extends State<QuizAnswer> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Card(
-        elevation: 4,
-        color: widget.color ?? Theme.of(context).colorScheme.secondary,
-        child: InkWell(
-          splashColor: widget.color?.withValues(alpha: 0.8),
-          highlightColor: widget.color?.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(8),
-          onTap: widget.onTap as void Function()? ?? () {},
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
-                  children: [
-                    Center(
-                      child: (widget.iconName != null &&
-                              Constants.questionIconStringMap
-                                  .containsKey(widget.iconName))
-                          ? Icon(
-                              widget.iconName != null
-                                  ? Constants
-                                      .questionIconStringMap[widget.iconName]
-                                  : null,
-                              size: clampDouble(
-                                  min(constraints.maxHeight,
-                                      constraints.maxWidth / 4),
-                                  5,
-                                  200),
-                              color: (widget.color?.computeLuminance() ??
-                                          Theme.of(context)
-                                              .colorScheme
-                                              .onSecondary
-                                              .computeLuminance()) >
-                                      0.5
-                                  ? Colors.black
-                                  : Colors.white,
-                            )
-                          : Container(),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          widget.body,
-                          style: widget.textStyle ??
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: (widget.color?.computeLuminance() ??
-                                                Theme.of(context)
-                                                    .colorScheme
-                                                    .onSecondary
-                                                    .computeLuminance()) >
-                                            0.5
-                                        ? Colors.black
-                                        : Colors.white,
-                                  ),
-                        ),
+    return Card(
+      elevation: 4,
+      color: widget.color ?? Theme.of(context).colorScheme.secondary,
+      shape: (widget.isSelected)
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                  style: BorderStyle.solid,
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 10),
+            )
+          : null,
+      child: InkWell(
+        splashColor: widget.color?.withAlpha(204), // 0.8 * 255
+        highlightColor: widget.color?.withAlpha(153), // 0.6 * 255
+        borderRadius: BorderRadius.circular(8),
+        onTap: widget.onTap as void Function()? ?? () {},
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Row(
+                children: [
+                  Center(
+                    child: (widget.iconName != null &&
+                            Constants.questionIconStringMap
+                                .containsKey(widget.iconName))
+                        ? Icon(
+                            widget.iconName != null
+                                ? Constants
+                                    .questionIconStringMap[widget.iconName]
+                                : null,
+                            size: clampDouble(
+                                min(constraints.maxHeight,
+                                    constraints.maxWidth / 4),
+                                5,
+                                200),
+                            color: (widget.color?.computeLuminance() ??
+                                        Theme.of(context)
+                                            .colorScheme
+                                            .onSecondary
+                                            .computeLuminance()) >
+                                    0.5
+                                ? Colors.black
+                                : Colors.white,
+                          )
+                        : Container(),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        widget.body,
+                        style: widget.textStyle ??
+                            Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: (widget.color?.computeLuminance() ??
+                                              Theme.of(context)
+                                                  .colorScheme
+                                                  .onSecondary
+                                                  .computeLuminance()) >
+                                          0.5
+                                      ? Colors.black
+                                      : Colors.white,
+                                ),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
