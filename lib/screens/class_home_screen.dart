@@ -56,10 +56,82 @@ class _ClassHomeState extends State<ClassHome> {
       appBar: AppBar(
         title: Text((classData?["className"] ?? "Error") + " Home"),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(classData?["className"] ?? "Error"),
+            Container(
+              // padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              height: 200,
+              color: Theme.of(context).colorScheme.primary,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Constants.subjectIconStringMap[
+                                classData?["classIcon"] ?? "General"] ??
+                            Icons.error,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: 50,
+                      ),
+                      Text(
+                        classData?["className"] ?? "Error",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge
+                            ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary),
+                      ),
+                      Text(
+                        classData?["classHour"] ?? "Error",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+                height: 400,
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Text("Class Standings",
+                          style: Theme.of(context).textTheme.headlineMedium),
+                      Divider(),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: Constants.groupNameIconStringMap.length,
+                          itemBuilder: (context, index) {
+                            String current = Constants
+                                .groupNameIconStringMap.keys
+                                .elementAt(index);
+                            return ListTile(
+                              leading: Icon(
+                                  Constants.groupNameIconStringMap[current] ??
+                                      Icons.error),
+                              title: Text(current),
+                              subtitle: Text("Score: ${index * 10}"),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, Constants.quizRoute,

@@ -59,4 +59,26 @@ class Constants {
     "check": Icons.check,
     "x": Icons.close,
   };
+
+  static const Map<String, IconData> groupNameIconStringMap = {
+    "Bolts": Icons.bolt,
+    "Enlightened": Icons.accessibility_new,
+    "Worldwides": Icons.public,
+    "Thinkers": Icons.psychology,
+    "Rockets": Icons.rocket_launch,
+    "Stars": Icons.military_tech,
+    "Innovators": Icons.lightbulb,
+    "Hiveminds": Icons.hive,
+    "Cyclones": Icons.cyclone,
+    "Engineers": Icons.build,
+    "Infinites": Icons.all_inclusive,
+    "Doctors": Icons.healing,
+    "Businessmen": Icons.card_travel,
+    "Firemen": Icons.local_fire_department,
+    "Naturalists": Icons.park,
+    "Elites": Icons.wine_bar,
+    "Royalty": Icons.castle,
+    "Influencers": Icons.tag,
+    "Liars": Icons.cake,
+  };
 }
