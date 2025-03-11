@@ -26,6 +26,19 @@ class ClassHome extends StatefulWidget {
 class _ClassHomeState extends State<ClassHome> {
   Map<String, dynamic>? classData;
 
+  Future<Map<String, dynamic>> getQuizData(String quizName) async {
+      var storageRef = FirebaseStorage.instance.ref();
+      storageRef = storageRef.child("quizzes/$quizName.json");
+
+      final Uint8List? data = await storageRef.getData();
+
+      if (data == null) {
+        throw Exception("Failed to load quiz data");
+      }
+
+      return jsonDecode(utf8.decode(data));
+    }
+
   @override
   Widget build(BuildContext context) {
     final ClassHomeArgs args;
@@ -61,27 +74,26 @@ class _ClassHomeState extends State<ClassHome> {
     buildAssignmentWidgets(BuildContext context) {
       List<Widget> result = [];
 
-      for (var assignment in classData?["assignments"]) {
+      for (var assignment in classData?["assignments"] ?? []) {
         result.add(AssignmentCard(
           assignmentName: assignment["assignmentName"],
           dueDate: (assignment["dueDate"] as Timestamp).toDate(),
-          onTap: () {},
+          onTap: () {
+            getQuizData(assignment["quizPath"] ?? "notHere").then((value) {
+                  if (mounted) {
+                    Navigator.pushNamed(context, Constants.quizRoute,
+                        arguments: QuizScreenArgs(quiz: value));
+                  }
+                }).onError((error, stackTrace) {
+                  if (mounted) {
+                    GlobalWidgets(context)
+                        .showSnackBar(content: "Error loading quiz.", backgroundColor: Theme.of(context).colorScheme.error);
+                  }
+                });
+          },
         ));
       }
       return result;
-    }
-
-    Future<Map<String, dynamic>> getQuizData(String quizName) async {
-      var storageRef = FirebaseStorage.instance.ref();
-      storageRef = storageRef.child("quizzes/$quizName.json");
-
-      final Uint8List? data = await storageRef.getData();
-
-      if (data == null) {
-        throw Exception("Failed to load quiz data");
-      }
-
-      return jsonDecode(utf8.decode(data));
     }
 
     return Scaffold(
@@ -167,31 +179,19 @@ class _ClassHomeState extends State<ClassHome> {
             Text("Assignments",
                 style: Theme.of(context).textTheme.headlineMedium),
             Divider(),
-            SingleChildScrollView(
-                child: Padding(
+            Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [...buildAssignmentWidgets(context)],
-              ),
-            )),
-            ElevatedButton(
-              onPressed: () {
-                getQuizData("quiz_example").then((value) {
-                  if (mounted) {
-                    Navigator.pushNamed(context, Constants.quizRoute,
-                        arguments: QuizScreenArgs(quiz: value));
-                  }
-                }).onError((error, stackTrace) {
-                  if (mounted) {
-                    GlobalWidgets(context)
-                        .showSnackBar(content: (error as Exception).toString());
-                  }
-                });
-              },
-              child: Text("Take Quiz"),
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [...buildAssignmentWidgets(context)],
+                  )),
             ),
+            SizedBox(
+              height: 100,
+            )
           ],
         ),
       ),

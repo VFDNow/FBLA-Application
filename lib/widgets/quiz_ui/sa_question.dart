@@ -51,7 +51,7 @@ class _SaQuestionState extends State<SaQuestion> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final answersHeight = constraints.maxHeight / 1.6;
+        final answersHeight = constraints.maxHeight / 2.3;
         return Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

@@ -352,14 +352,20 @@ class QuizScreenState extends State<QuizScreen> {
                         child: Text("Back"),
                       )
                     : Container(),
-                Center(
-                  child: Text(
-                    (reviewMode)
-                        ? "Review & Submit"
-                        : questionData[currentPage]["questionTitle"] ??
-                            "Question Name",
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        (reviewMode)
+                            ? "Review & Submit"
+                            : questionData[currentPage]["questionTitle"] ??
+                                "Question Name",
+                                softWrap: true,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary, overflow: TextOverflow.clip),
+                      ),
+                    ),
                   ),
                 ),
                 (allowTraversal)

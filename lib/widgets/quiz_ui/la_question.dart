@@ -51,7 +51,7 @@ class _LaQuestionState extends State<LaQuestion> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final answersHeight = constraints.maxHeight / 1.6;
+        final answersHeight = constraints.maxHeight / 2.3;
         return Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -65,42 +65,48 @@ class _LaQuestionState extends State<LaQuestion> {
                   ),
                 ),
               ),
-              SizedBox(
-                  height: answersHeight,
-                  width: max(constraints.maxWidth * 0.8, 150),
-                  child: Column(
-                    spacing: 10,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          controller: _controller, // Use the controller
-                          maxLines: 5,
-                          minLines: 3,
-                          autocorrect: false,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Answer',
+              Expanded(
+                child: SizedBox(
+                    height: answersHeight,
+                    width: max(constraints.maxWidth * 0.8, 150),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        spacing: 10,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Expanded(
+                              child: TextField(
+                                controller: _controller, // Use the controller
+                                maxLines: 5,
+                                minLines: 2,
+                                autocorrect: false,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Answer',
+                                ),
+                                onChanged: (value) {
+                                  if (widget.allowTraversal) {
+                                    widget.onAnswer(widget.question, value);
+                                  }
+                                },
+                                onSubmitted: (value) {
+                                  widget.onAnswer(widget.question, value);
+                                },
+                              ),
+                            ),
                           ),
-                          onChanged: (value) {
-                            if (widget.allowTraversal) {
-                              widget.onAnswer(widget.question, value);
-                            }
-                          },
-                          onSubmitted: (value) {
-                            widget.onAnswer(widget.question, value);
-                          },
-                        ),
+                          if (!widget.allowTraversal)
+                            ElevatedButton(
+                                onPressed: () {
+                                  widget.onAnswer(
+                                      widget.question, _controller.text);
+                                },
+                                child: Text("Submit")),
+                        ],
                       ),
-                      if (!widget.allowTraversal)
-                        ElevatedButton(
-                            onPressed: () {
-                              widget.onAnswer(
-                                  widget.question, _controller.text);
-                            },
-                            child: Text("Submit")),
-                    ],
-                  )),
+                    )),
+              ),
             ],
           ),
         );

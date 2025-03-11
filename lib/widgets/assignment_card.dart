@@ -47,20 +47,27 @@ class AssignmentCard extends StatelessWidget {
             width: 200,
             height: 150,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               children: [
                 Text(
                   assignmentName,
+                  softWrap: false,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color:
                             Theme.of(context).colorScheme.onSecondaryContainer,
+                            overflow: TextOverflow.fade
                       ),
                 ),
+                Divider(
+                  color: Colors.black,
+                ),
                 Text(
-                  "Due: ${dueDate.month}/${dueDate.day}/${dueDate.year}, ${dueDate.hour % 12}:${dueDate.minute} ${dueDate.hour > 12 ? 'PM' : 'AM'}",
+                  "${dueDate.month}/${dueDate.day}/${dueDate.year}, ${dueDate.hour % 12}:${dueDate.minute} ${dueDate.hour > 12 ? 'PM' : 'AM'}",
+                  softWrap: false,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color:
                             Theme.of(context).colorScheme.onSecondaryContainer,
+                            overflow: TextOverflow.fade
                       ),
                 ),
                 Text(

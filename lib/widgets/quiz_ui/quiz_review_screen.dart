@@ -37,62 +37,67 @@ class QuizReviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            "Review Quiz",
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 500,
-              height: 500,
-              child: Card(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: quizData["questions"].length,
-                        itemBuilder: (context, index) {
-                          return _buildQuestionCard(context, index);
-                        },
-                      ),
-                    ),
-                    Divider(),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: Text(
-                          _getAllQuestionsAnswered()
-                              ? "All Questions Answered"
-                              : "Not All Questions Answered",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                  color: _getAllQuestionsAnswered()
-                                      ? Colors.green
-                                      : Colors.red),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Text(
+              "Review Quiz",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: 500,
+                  height: 500,
+                  child: Card(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: quizData["questions"].length,
+                            itemBuilder: (context, index) {
+                              return _buildQuestionCard(context, index);
+                            },
+                          ),
                         ),
-                      ),
+                        Divider(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              _getAllQuestionsAnswered()
+                                  ? "All Questions Answered"
+                                  : "Not All Questions Answered",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                      color: _getAllQuestionsAnswered()
+                                          ? Colors.green
+                                          : Colors.red),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // print("Submitting...");
-              onSubmit!(quizData);
-            },
-            child: const Text("Submit Quiz"),
-          ),
-        ],
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // print("Submitting...");
+                onSubmit!(quizData);
+              },
+              child: const Text("Submit Quiz"),
+            ),
+          ],
+        ),
       ),
     );
   }
