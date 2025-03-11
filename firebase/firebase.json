@@ -14,8 +14,10 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": [
-      ]
+      "predeploy": []
     }
-  ]
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
 }

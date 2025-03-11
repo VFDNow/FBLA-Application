@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:fbla_application/utils/constants.dart';
+import 'package:fbla_application/utils/global_widgets.dart';
+import 'package:fbla_application/widgets/assignment_card.dart';
 import 'package:fbla_application/widgets/error_screen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide ErrorWidget;
 
 class ClassHomeArgs {
@@ -50,6 +56,32 @@ class _ClassHomeState extends State<ClassHome> {
           child: CircularProgressIndicator(),
         ),
       );
+    }
+
+    buildAssignmentWidgets(BuildContext context) {
+      List<Widget> result = [];
+
+      for (var assignment in classData?["assignments"]) {
+        result.add(AssignmentCard(
+          assignmentName: assignment["assignmentName"],
+          dueDate: (assignment["dueDate"] as Timestamp).toDate(),
+          onTap: () {},
+        ));
+      }
+      return result;
+    }
+
+    Future<Map<String, dynamic>> getQuizData(String quizName) async {
+      var storageRef = FirebaseStorage.instance.ref();
+      storageRef = storageRef.child("quizzes/$quizName.json");
+
+      final Uint8List? data = await storageRef.getData();
+
+      if (data == null) {
+        throw Exception("Failed to load quiz data");
+      }
+
+      return jsonDecode(utf8.decode(data));
     }
 
     return Scaffold(
@@ -132,79 +164,31 @@ class _ClassHomeState extends State<ClassHome> {
                     ],
                   ),
                 )),
+            Text("Assignments",
+                style: Theme.of(context).textTheme.headlineMedium),
+            Divider(),
+            SingleChildScrollView(
+                child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [...buildAssignmentWidgets(context)],
+              ),
+            )),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, Constants.quizRoute,
-                    arguments: QuizScreenArgs(
-                        quiz: Map<String, dynamic>.from({
-                      "quizName": "Name",
-                      "quizDesc": "Description Here",
-                      "shuffleOrder": true,
-                      "allowTraversal": true,
-                      "allowAIGrading": true,
-                      "authors": ["Author A", "Author B"],
-                      "questions": [
-                        {
-                          "questionId": '0',
-                          "questionType": "MC",
-                          "questionTitle": "Nerds",
-                          "questionBody": "What is the capital of Wisconsin?",
-                          "embeds": [
-                            "https://media.istockphoto.com/id/839295596/photo/six-pre-teen-friends-piggybacking-in-a-park-close-up-portrait.jpg?s=612x612&w=0&k=20&c=MWkFYzpRSvO1dRql3trV4k6ECO-rTy4HgF8OxrtUkH8=",
-                            "FiREBASE STORAGE IMAGE"
-                          ],
-                          "correctAnswers": [0],
-                          "answers": [
-                            {
-                              "answerId": 0,
-                              "answerBody": "Madison",
-                              "answerIcon": "iconName"
-                            },
-                            {
-                              "answerId": 1,
-                              "answerBody": "Milwaukee",
-                              "answerIcon": "iconName"
-                            },
-                            {
-                              "answerId": 2,
-                              "answerBody": "Ozaukee",
-                              "answerIcon": "iconName"
-                            },
-                            {
-                              "answerId": 3,
-                              "answerBody": "Washington D.C.",
-                              "answerIcon": "iconName"
-                            }
-                          ]
-                        },
-                        {
-                          "questionId": "1",
-                          "questionType": "TF",
-                          "questionTitle":
-                              "What is the evaluation of this text here?",
-                          "questionBody": "The correct answer is True.",
-                          "correctAnswer": true
-                        },
-                        {
-                          "questionId": "2",
-                          "questionType": "SA",
-                          "questionTitle": "Wisconsin Capital",
-                          "questionBody": "What is the capital of Wisconsin?",
-                          "singleWord": true,
-                          "answers": ["Madison"]
-                        },
-                        {
-                          "questionId": "3",
-                          "questionType": "LA",
-                          "questionTitle": "Wisconsin Capital",
-                          "questionBody":
-                              "Write a bit about the capital of Wisconsin?",
-                          "singleWord": true,
-                          "criteria":
-                              "Needs to say the capital is madison, and needs to mention the University of Wisconsin that resides in madison.",
-                        }
-                      ]
-                    })));
+                getQuizData("quiz_example").then((value) {
+                  if (mounted) {
+                    Navigator.pushNamed(context, Constants.quizRoute,
+                        arguments: QuizScreenArgs(quiz: value));
+                  }
+                }).onError((error, stackTrace) {
+                  if (mounted) {
+                    GlobalWidgets(context)
+                        .showSnackBar(content: (error as Exception).toString());
+                  }
+                });
               },
               child: Text("Take Quiz"),
             ),
