@@ -83,6 +83,92 @@ exports.onClassJoin = onCall(async (request) => {
   
 });
 
+exports.addUserToGroup = onCall(async (request) => {
+  const classId = request.data.classId;
+  const userId = request.data.userId;
+  const groupName = request.data.groupName;
+  const db = getFirestore();
+
+  const ownerDoc = await db.collection("users").doc(userId).get();
+  const ownerData = ownerDoc.data();
+
+  if (!ownerData) {
+    logger.error("User Not Found");
+    return false;
+  }
+
+  const classDoc = db.collection("classes").doc(classId);
+  const classData = (await classDoc.get()).data();
+
+  if (!classData) {
+    logger.error("Class Not Found");
+    return false;
+  }
+
+  if (!classData["groups"]) {
+    classDoc.set({
+      groups: {
+        groupName: {
+          "members": [
+            {
+              uId: userId,
+              name: `${ownerData["userFirst"]} ${ownerData["userLast"]}`,
+              icon: ownerData["userImageSeed"] ?? "abc",
+            }
+          ]
+        },
+      }
+    }, { merge: true })
+  } else {
+    classDoc.update({
+      groups: {
+        groupName: {
+          "members": FieldValue.arrayUnion({
+            uId: userId,
+            name: `${ownerData["userFirst"]} ${ownerData["userLast"]}`,
+            icon: ownerData["userImageSeed"] ?? "abc",
+          })
+        }
+      }
+    })
+  }
+
+  return;
+});
+
+exports.removeUserFromGroup = onCall(async (request) => {
+
+  const classId = request.data.classId;
+  const userId = request.data.userId;
+  const groupName = request.data.groupName;
+  const db = getFirestore();
+
+  const classDoc = db.collection("classes").doc(classId);
+  const classData = (await classDoc.get()).data();
+
+  if (!classData) {
+    logger.error("Class Not Found");
+    return false;
+  }
+
+  if (!classData["groups"]) {
+    logger.error("Group Not Found");
+    return false;
+  }
+
+  classDoc.update({
+    groups: {
+      groupName: {
+        "members": FieldValue.arrayRemove({
+          uId: userId,
+        })
+      }
+    }
+  })
+
+  return;
+});
+
 // Runs when a class is created.
 // Updates the owning users classes data to include the new class, and adds a new invite link to invites
 exports.onClassCreation = onDocumentCreated(
