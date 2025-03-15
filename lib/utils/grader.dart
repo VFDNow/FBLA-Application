@@ -119,6 +119,20 @@ class Grader {
     final answers = question['answers'] as List;
     return answers.firstWhere((answer) => answer['answerId'] == answerId);
   }
+
+  int getStarValue(List<dynamic> questions, List<bool> scores) {
+    int starValue = 0;
+    for (int i = 0; i < questions.length; i++) {
+      if (scores[i]) {
+        if (questions[i]['starValue'] == null) {
+          starValue += 10;
+        } else {
+          starValue += questions[i]['starValue'] as int;
+        }
+      }
+    }
+    return starValue;
+  }
 }
 
 enum QuestionType { multipleChoice, trueFalse, shortAnswer, longAnswer }

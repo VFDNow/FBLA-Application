@@ -1,6 +1,5 @@
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
-import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:flutter/material.dart';
 
 class MCQuestion extends StatefulWidget {

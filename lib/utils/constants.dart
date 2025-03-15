@@ -31,6 +31,14 @@ class Constants {
     Color(0xFF90A4AE),
   ];
 
+  static const Map<String, Color> percentageColorMap = {
+    "0-20": Color(0xFFF44336), // Red
+    "21-40": Color(0xFFFF9800), // Orange
+    "41-60": Color(0xFFFFEB3B), // Yellow
+    "61-80": Color(0xFF8BC34A), // Light Green
+    "81-100": Color(0xFF4CAF50), // Green
+  };
+
   // Icon String Map
   static const Map<String, IconData> subjectIconStringMap = {
     "General": Icons.school,

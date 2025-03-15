@@ -40,7 +40,7 @@ class AssignmentCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         splashColor: stateColor.withAlpha(240),
-        onTap: onTap,
+        onTap: (assignmentState == AssignmentState.notStarted) ? onTap : null,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SizedBox(
@@ -53,10 +53,8 @@ class AssignmentCard extends StatelessWidget {
                   assignmentName,
                   softWrap: false,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
-                            overflow: TextOverflow.fade
-                      ),
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      overflow: TextOverflow.fade),
                 ),
                 Divider(
                   color: Colors.black,
@@ -65,10 +63,8 @@ class AssignmentCard extends StatelessWidget {
                   "${dueDate.month}/${dueDate.day}/${dueDate.year}, ${dueDate.hour % 12}:${dueDate.minute} ${dueDate.hour > 12 ? 'PM' : 'AM'}",
                   softWrap: false,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color:
-                            Theme.of(context).colorScheme.onSecondaryContainer,
-                            overflow: TextOverflow.fade
-                      ),
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      overflow: TextOverflow.fade),
                 ),
                 Text(
                   "Status: $stateText",
@@ -77,13 +73,15 @@ class AssignmentCard extends StatelessWidget {
                             Theme.of(context).colorScheme.onSecondaryContainer,
                       ),
                 ),
-                Expanded(
-                    child: Center(
-                  child: Text(
-                    "0/0",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ))
+                (assignmentState == AssignmentState.completed)
+                    ? Expanded(
+                        child: Center(
+                        child: Text(
+                          "0/0",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ))
+                    : Container()
               ],
             ),
           ),

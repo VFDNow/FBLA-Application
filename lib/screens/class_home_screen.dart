@@ -27,6 +27,7 @@ class ClassHome extends StatefulWidget {
 
 class _ClassHomeState extends State<ClassHome> {
   Map<String, dynamic>? classData;
+  List<Map<String, dynamic>>? userQuizHistory;
   bool isLoading = false;
 
   Future<Map<String, dynamic>> getQuizData(String quizName) async {
@@ -61,6 +62,31 @@ class _ClassHomeState extends State<ClassHome> {
           .then((value) => {
                 setState(() {
                   classData = value.data();
+                })
+              });
+
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Class Home'),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (userQuizHistory == null) {
+      FirebaseFirestore.instance
+          .collection("classes")
+          .doc(args.classId)
+          .collection("quizHistory")
+          .where("userId",
+              isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "notFound")
+          .get()
+          .then((value) => {
+                setState(() {
+                  userQuizHistory = value.docs.map((e) => e.data()).toList();
+                  print(userQuizHistory.toString());
                 })
               });
 
@@ -113,9 +139,25 @@ class _ClassHomeState extends State<ClassHome> {
       List<Widget> result = [];
 
       for (var assignment in classData?["assignments"] ?? []) {
+        AssignmentState assignmentState = AssignmentState.notStarted;
+
+        if ((assignment["dueDate"] as Timestamp).compareTo(Timestamp.now()) <
+            0) {
+          assignmentState = AssignmentState.missed;
+        }
+
+        if (userQuizHistory != null) {
+          for (var history in userQuizHistory!) {
+            if (history["assignmentId"] == assignment["assignmentId"]) {
+              assignmentState = AssignmentState.completed;
+            }
+          }
+        }
+
         result.add(AssignmentCard(
           assignmentName: assignment["assignmentName"],
           dueDate: (assignment["dueDate"] as Timestamp).toDate(),
+          assignmentState: assignmentState,
           onTap: () {
             setState(() {
               isLoading = true;
