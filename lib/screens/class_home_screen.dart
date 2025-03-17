@@ -138,6 +138,29 @@ class _ClassHomeState extends State<ClassHome> {
     buildAssignmentWidgets(BuildContext context) {
       List<Widget> result = [];
 
+      if (userGroup == "None") {
+        result.add(
+          Center(
+            child: Row(
+              children: [
+                Icon(Icons.error, size: 50, color: Colors.amberAccent,),
+                SizedBox(width: 20),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("You are not in any group!", style: Theme.of(context).textTheme.headlineMedium),
+                    Text("Ask your teacher to assign you to a group to access assignments.", style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+          
+              ],
+            ),
+          )
+        );
+        return result;
+      }
+
       for (var assignment in classData?["assignments"] ?? []) {
         AssignmentState assignmentState = AssignmentState.notStarted;
 
@@ -167,7 +190,8 @@ class _ClassHomeState extends State<ClassHome> {
                 isLoading = false;
               });
               if (mounted) {
-                Navigator.pushNamed(context, Constants.quizRoute,
+                Navigator.pushNamedAndRemoveUntil(context, Constants.quizRoute,
+                    (route) => false,
                     arguments: QuizScreenArgs(quiz: value));
               }
             }).onError((error, stackTrace) {
@@ -308,7 +332,7 @@ class _ClassHomeState extends State<ClassHome> {
                                               .onPrimary),
                                 ),
                                 SizedBox(
-                                  height: 150,
+                                  // height: 150,
                                   width: 250,
                                   child: ListView.builder(
                                     shrinkWrap: true,
@@ -334,7 +358,7 @@ class _ClassHomeState extends State<ClassHome> {
                     ),
                   ),
             SizedBox(
-                height: 400,
+                // height: 400,
                 width: double.infinity,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
