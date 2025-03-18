@@ -10,5 +10,6 @@
     "editor.defaultFormatter": "Dart-Code.dart-code"
   },
   "cmake.ignoreCMakeListsMissing": true,
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "dart.showTodos": false
 }
