@@ -358,7 +358,7 @@ class _ClassHomeState extends State<ClassHome> {
                     ),
                   ),
             SizedBox(
-                // height: 400,
+                height: 400,
                 width: double.infinity,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
