@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/grader.dart';
 import 'package:fbla_application/widgets/quiz_ui/la_question.dart';
@@ -7,12 +8,14 @@ import 'package:fbla_application/widgets/quiz_ui/quiz_review_screen.dart';
 import 'package:fbla_application/widgets/quiz_ui/sa_question.dart';
 import 'package:fbla_application/widgets/quiz_ui/tf_question.dart';
 import 'package:fbla_application/widgets/error_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' hide ErrorWidget;
 
 class QuizScreenArgs {
   final Map<String, dynamic> quiz;
+  final String quizId;
 
-  const QuizScreenArgs({required this.quiz});
+  const QuizScreenArgs({required this.quiz, this.quizId = ""});
 }
 
 class QuizScreen extends StatefulWidget {
@@ -45,6 +48,17 @@ class QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  Future<bool> publishResults(Map<String, dynamic> quizData, String assignmentId, List<bool> scores) async {
+    final ref = FirebaseFirestore.instance.collection("quizzes").doc(quizData["quizId"]).collection("quizHistory").doc();
+    await ref.set({
+      "userId": FirebaseAuth.instance.currentUser?.uid,
+      "assignmentId": assignmentId,
+      "results": scores,
+      "timestamp": Timestamp.now(),
+    });
+    return true;
+  }
+
   void traversalSwitchToResults(quizData) {
     setState(() {
       currentState = QuestionState.grading;
@@ -66,6 +80,9 @@ class QuizScreenState extends State<QuizScreen> {
         }
       }
     }
+
+    await publishResults(quiz, (ModalRoute.of(context)!.settings.arguments as QuizScreenArgs).quizId, scores);
+
     if (mounted) {
       Navigator.pushReplacementNamed(context, Constants.quizResultsRoute,
           arguments: QuizResultsArgs(quiz: quiz, scores: scores));
