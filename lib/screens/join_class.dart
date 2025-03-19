@@ -188,7 +188,7 @@ class JoinClassDialog extends StatelessWidget {
                           Navigator.pop(context);
                         }
                       }
-                    } on FirebaseFunctionsException catch (error) {
+                    } on FirebaseFunctionsException {
                       if (context.mounted) {
                         GlobalWidgets(context).showSnackBar(
                             content: "Error joining class.  Please Try Again.",
