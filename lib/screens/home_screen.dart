@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/screens/class_home_screen.dart';
+import 'package:fbla_application/screens/teacher_home_screen.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/class_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +16,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Map<String, dynamic>? userData;
+  
   @override
   Widget build(BuildContext context) {
     if (userData == null) {
@@ -47,7 +49,13 @@ class _HomeState extends State<Home> {
         ),
       );
     }
+    
+    // Redirect teachers to the teacher home screen
+    if ((userData?["userType"] ?? "Student") == "Teacher") {
+      return TeacherHomeScreen();
+    }
 
+    // Continue with the student view
     List<Widget> classCards = buildClassCards(context, userData!);
 
     return Scaffold(

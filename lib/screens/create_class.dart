@@ -13,9 +13,29 @@ class CreateClassScreen extends StatefulWidget {
 class _CreateClassScreenState extends State<CreateClassScreen> {
   final _formKey = GlobalKey<FormState>();
   String _className = '';
-  String _classHour = '';
   String _classDescription = '';
   String currentIcon = "General";
+  
+  // Controllers for form fields to easily reset them
+  final TextEditingController _classNameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _classNameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  // Method to reset form fields
+  void _resetForm() {
+    _formKey.currentState!.reset();
+    _classNameController.clear();
+    _descriptionController.clear();
+    setState(() {
+      currentIcon = "General";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +60,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                     SizedBox(width: 25),
                     Expanded(
                       child: TextFormField(
+                        controller: _classNameController,
                         decoration: InputDecoration(labelText: 'Class Name'),
                         textCapitalization: TextCapitalization.words,
                         validator: (value) {
@@ -53,21 +74,13 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         },
                       ),
                     ),
-                    SizedBox(width: 25),
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(labelText: 'Class Hour'),
-                        onSaved: (value) {
-                          _classHour = value!;
-                        },
-                      ),
-                    ),
                   ],
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
+                  controller: _descriptionController,
                   maxLines: 4,
                   minLines: 1,
                   decoration: InputDecoration(labelText: 'Class Description'),
@@ -109,22 +122,93 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
+                    
+                    // Check if a class with same name already exists
+                    String? userId = FirebaseAuth.instance.currentUser?.uid;
+                    if (userId != null) {
+                      QuerySnapshot existingClasses = await FirebaseFirestore.instance
+                          .collection('classes')
+                          .where('owner', isEqualTo: userId)
+                          .where('className', isEqualTo: _className)
+                          .get();
+                      
+                      if (existingClasses.docs.isNotEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('You already have a class with this name'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                    }
 
-                    FirebaseFirestore.instance
-                        .collection('classes')
-                        .add({
-                          'className': _className,
-                          'classHour': _classHour,
-                          'classDesc': _classDescription,
-                          'classIcon': currentIcon,
-                          'owner': FirebaseAuth.instance.currentUser?.uid,
-                        })
-                        .then((value) => print("Class Added"))
-                        .catchError(
-                            (error) => print("Failed to add class: $error"));
+                    // Create a unique class ID for the base class
+                    DocumentReference baseClassRef = FirebaseFirestore.instance.collection('classTemplates').doc();
+                    String baseClassId = baseClassRef.id;
+                    
+                    // Create the base class template
+                    await baseClassRef.set({
+                      'className': _className,
+                      'classDesc': _classDescription,
+                      'classIcon': currentIcon,
+                      'owner': userId,
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
+                    
+                    // Now create the first section
+                    await FirebaseFirestore.instance.collection('classes').add({
+                      'className': _className,
+                      'classDesc': _classDescription,
+                      'classIcon': currentIcon,
+                      'owner': userId,
+                      'baseClassId': baseClassId,
+                      'classHour': 'Section 1', // Default section name
+                      'createdAt': FieldValue.serverTimestamp(),
+                    }).then((value) {
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Class created successfully!')),
+                      );
+                      
+                      // Ask user what to do next
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Class Created'),
+                            content: Text('Would you like to create another class or exit to manage your classes?'),
+                            actions: [
+                              TextButton(
+                                child: Text('Create Another'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // Close dialog
+                                  _resetForm();
+                                },
+                              ),
+                              TextButton(
+                                child: Text('Manage Classes'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // Close dialog
+                                  // Navigate to teacher home page
+                                  Navigator.of(context).pushReplacementNamed('/teacher_home');
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }).catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to create class: $error'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    });
                   }
                 },
                 child: Text('Create Class'),

@@ -1,16 +1,11 @@
-
 const { logger } = require("firebase-functions");
-// const { onRequest } = require("firebase-functions/v2/https");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
-// const admin = require("firebase-admin");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 initializeApp();
-
-//http://127.0.0.1:5001/fbla-app-fda42/us-central1/onClassJoin?classId=dcgQSCcz94Ks7Rzsp1oY&userId=FC5ryn30FOSmHBDGydMb
 
 exports.onClassJoin = onCall(async (request) => {
   const classId = request.data.classId;
@@ -21,8 +16,11 @@ exports.onClassJoin = onCall(async (request) => {
   const classDoc = db.collection("classes").doc(classId);
   const classData = (await classDoc.get()).data();
   const userData = (await userDoc.get()).data();
+  
+  // Get teacher data
   const teacherData = (await db.collection("users").doc(classData["owner"]).get()).data();
 
+  // Check if user is already in this class
   for (student in classData["students"] ?? []) {
     if (student.studentId ?? "" == userId) {
       return {
@@ -32,14 +30,15 @@ exports.onClassJoin = onCall(async (request) => {
     }
   }
 
-  // Add class to the users class list
+  // Add class to the user's classes array
   if (!userData["classes"] || userData["classes"].length <= 0) {
     userDoc.set({
       classes: [
         {
-          classIcon: classData["classIcon"],
           classId: classId,
+          // Get these from the section
           className: classData["className"],
+          classIcon: classData["classIcon"],
           teacherName: `${teacherData["userFirst"]} ${teacherData["userLast"]}`,
         },
       ],
@@ -47,15 +46,15 @@ exports.onClassJoin = onCall(async (request) => {
   } else {
     userDoc.update({
       classes: FieldValue.arrayUnion({
-        classIcon: classData["classIcon"] ?? "General",
         classId: classId,
         className: classData["className"] ?? "Class",
+        classIcon: classData["classIcon"] ?? "General",
         teacherName: `${teacherData["userFirst"]} ${teacherData["userLast"]}` ?? "",
       }),
     })
   }
 
-  // Add user to classes students list
+  // Add user to the class's students list
   if (!classData["students"]) {
     classDoc.set({
       students: [
@@ -78,9 +77,8 @@ exports.onClassJoin = onCall(async (request) => {
 
   return {
     res: true,
-    result: `User Succesfully joined class: ${classData["className"] ?? "className"}`
+    result: `User Successfully joined class: ${classData["className"] ?? "className"}`
   }
-  
 });
 
 exports.addUserToGroup = onCall(async (request) => {
@@ -169,8 +167,7 @@ exports.removeUserFromGroup = onCall(async (request) => {
   return;
 });
 
-// Runs when a class is created.
-// Updates the owning users classes data to include the new class, and adds a new invite link to invites
+// Runs when a class section is created
 exports.onClassCreation = onDocumentCreated(
   "/classes/{classId}",
   async (event) => {
@@ -184,7 +181,6 @@ exports.onClassCreation = onDocumentCreated(
       return;
     }
 
-    // 
     const ownerUid = classData["owner"];
     const db = getFirestore();
 
@@ -196,6 +192,7 @@ exports.onClassCreation = onDocumentCreated(
       return;
     }
 
+    // Add this class to the owner's classes array
     if (!ownerData["classes"] || ownerData["classes"].length <= 0) {
       db.collection("users")
         .doc(ownerUid)
@@ -203,9 +200,9 @@ exports.onClassCreation = onDocumentCreated(
           {
             classes: [
               {
-                classIcon: classData["classIcon"],
                 classId: classId,
                 className: classData["className"],
+                classIcon: classData["classIcon"],
                 teacherName: `${ownerData["userFirst"]} ${ownerData["userLast"]}`,
               },
             ],
@@ -217,9 +214,9 @@ exports.onClassCreation = onDocumentCreated(
 
       docref.update({
         classes: FieldValue.arrayUnion({
-          classIcon: classData["classIcon"] ?? "General",
           classId: classId,
           className: classData["className"] ?? "Class",
+          classIcon: classData["classIcon"] ?? "General",
           teacherName: `${ownerData["userFirst"] ?? "Teacher"} ${
             ownerData["userLast"] ?? ""
           }`,
@@ -227,16 +224,120 @@ exports.onClassCreation = onDocumentCreated(
       });
     }
 
-    // Add invite link to database
-    db.collection("invites").doc().set({
+    // Generate unique join code
+    const generateUniqueCode = async () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      let isUnique = false;
+      let attempts = 0;
+      
+      while (!isUnique && attempts < 10) {
+        code = '';
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        const codeSnapshot = await db.collection("invites")
+          .doc(code)
+          .get();
+        
+        if (!codeSnapshot.exists) {
+          isUnique = true;
+        }
+        attempts++;
+      }
+      
+      if (!isUnique) {
+        logger.error("Failed to generate a unique code");
+        code = `CL${Date.now().toString().slice(-6)}`;
+      }
+      
+      return code;
+    };
+
+    const joinCode = await generateUniqueCode();
+    
+    // Create invite that only references this section ID
+    db.collection("invites").doc(joinCode).set({
       classId: classId,
-      className: classData["className"] ?? "Class",
-      classIcon: classData["classIcon"] ?? "General",
-      classHour: classData["classHour"] ?? "Hour",
-      classDesc: classData["classDesc"] ?? "Desc",
-      teacherName: `${ownerData["userFirst"] ?? "Teacher"} ${
-            ownerData["userLast"] ?? ""
-          }`,
+      createdAt: FieldValue.serverTimestamp()
     });
   }
 );
+
+// Add migration function to update existing data
+exports.migrateToNewSchema = onCall(async (request) => {
+  // Only allow admin users to run this
+  if (!request.auth.token.admin) {
+    throw new HttpsError('permission-denied', 'Only admins can run migrations');
+  }
+  
+  const db = getFirestore();
+  
+  // 1. Create class templates for existing classes
+  const classesSnapshot = await db.collection("classes").get();
+  const classGroups = {};
+  
+  // Group classes by name
+  classesSnapshot.forEach(doc => {
+    const data = doc.data();
+    const className = data.className || "Unnamed Class";
+    
+    if (!classGroups[className]) {
+      classGroups[className] = [];
+    }
+    
+    classGroups[className].push({
+      id: doc.id,
+      data
+    });
+  });
+  
+  // For each group, create a template and update sections
+  for (const [className, classes] of Object.entries(classGroups)) {
+    if (classes.length > 0) {
+      const firstClass = classes[0];
+      
+      // Skip if already has baseClassId
+      if (firstClass.data.baseClassId) continue;
+      
+      // Create template from first class
+      const templateRef = await db.collection("classTemplates").add({
+        className: firstClass.data.className || "Unnamed Class",
+        classDesc: firstClass.data.classDesc || "",
+        classIcon: firstClass.data.classIcon || "General",
+        owner: firstClass.data.owner,
+        createdAt: FieldValue.serverTimestamp()
+      });
+      
+      // Update all classes in this group to reference the template
+      for (const cls of classes) {
+        await db.collection("classes").doc(cls.id).update({
+          baseClassId: templateRef.id
+        });
+      }
+    }
+  }
+  
+  // 2. Update invites to only reference section ID
+  const invitesSnapshot = await db.collection("invites").get();
+  
+  for (const doc of invitesSnapshot.docs) {
+    const data = doc.data();
+    if (!data.classId) continue;
+    
+    // Keep only classId and simplify
+    await db.collection("invites").doc(doc.id).update({
+      className: FieldValue.delete(),
+      classIcon: FieldValue.delete(),
+      classHour: FieldValue.delete(),
+      classDesc: FieldValue.delete(),
+      teacherName: FieldValue.delete()
+    });
+  }
+  
+  return {
+    success: true,
+    message: "Migration completed successfully"
+  };
+});

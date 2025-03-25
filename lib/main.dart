@@ -2,6 +2,7 @@ import 'package:fbla_application/api/firebase_auth_config.dart';
 import 'package:fbla_application/screens/class_home_screen.dart';
 import 'package:fbla_application/screens/create_class.dart';
 import 'package:fbla_application/screens/first_time_sign_in.dart';
+import 'package:fbla_application/screens/teacher_home_screen.dart';
 import 'package:fbla_application/screens/home_screen.dart';
 import 'package:fbla_application/screens/join_class.dart';
 import 'package:fbla_application/screens/profile_screen.dart';
@@ -17,6 +18,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
+import 'package:fbla_application/screens/teacher_class_home_screen.dart';
 
 void main() async {
   // Ensure firebase initialized before booting app
@@ -63,7 +65,8 @@ class FBLAApp extends StatelessWidget {
       Constants.classHomeRoute: (context) => ClassHome(),
       Constants.quizRoute: (context) => QuizScreen(),
       Constants.quizResultsRoute: (context) => QuizResultsScreen(),
+      '/teacher_home': (context) => TeacherHomeScreen(),
+      '/teacher_class_home': (context) => TeacherClassHomeScreen(),
     };
   }
 }
-// Nice

@@ -33,16 +33,14 @@ class _JoinClassScreenState extends State<JoinClassScreen> {
                   "Join a Class",
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                SizedBox(
-                  height: 12,
-                ),
+                SizedBox(height: 12),
                 SizedBox(
                   width: 500,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                         decoration: InputDecoration(labelText: 'Class Code'),
-                        textCapitalization: TextCapitalization.words,
+                        textCapitalization: TextCapitalization.characters,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a code';
@@ -50,13 +48,12 @@ class _JoinClassScreenState extends State<JoinClassScreen> {
                           return null;
                         },
                         onSaved: (value) {
-                          _joinCode = value!;
-                        }),
+                          // Save the value in all uppercase to ensure consistent behavior
+                          _joinCode = value!.trim().toUpperCase();                        
+                      }),
                   ),
                 ),
-                SizedBox(
-                  height: 12,
-                ),
+                SizedBox(height: 12),
                 ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
@@ -66,15 +63,53 @@ class _JoinClassScreenState extends State<JoinClassScreen> {
                             .collection("invites")
                             .doc(_joinCode)
                             .get()
-                            .then((value) {
+                            .then((inviteDoc) async {
                           if (context.mounted) {
-                            if (value.exists) {
-                              var data = value.data();
-                              showDialog(
+                            if (inviteDoc.exists) {
+                              var inviteData = inviteDoc.data();
+                              String classId = inviteData?['classId'];
+                              
+                              // Fetch the class data
+                              DocumentSnapshot classDoc = await db
+                                  .collection('classes')
+                                  .doc(classId)
+                                  .get();
+                              
+                              if (!classDoc.exists) {
+                                GlobalWidgets(context).showSnackBar(
+                                  content: 'Class not found',
+                                  backgroundColor: Theme.of(context).colorScheme.error
+                                );
+                                return;
+                              }
+                              
+                              Map<String, dynamic> classData = classDoc.data() as Map<String, dynamic>;
+                              
+                              // Fetch teacher info
+                              DocumentSnapshot teacherDoc = await db
+                                  .collection('users')
+                                  .doc(classData['owner'])
+                                  .get();
+                              
+                              Map<String, dynamic> teacherData = teacherDoc.data() as Map<String, dynamic>;
+                              String teacherName = "${teacherData['userFirst']} ${teacherData['userLast']}";
+                              
+                              // Display confirmation dialog
+                              if (context.mounted) {
+                                showDialog(
                                   context: context,
                                   builder: (context) {
-                                    return JoinClassDialog(data: data);
-                                  });
+                                    return JoinClassDialog(
+                                      classId: classId,
+                                      className: classData['className'] ?? 'Class',
+                                      classHour: classData['classHour'] ?? 'N/A',
+                                      classIcon: classData['classIcon'] ?? 'General',
+                                      classDesc: classData['classDesc'] ?? '',
+                                      teacherName: teacherName,
+                                    );
+                                  }
+                                );
+                              }
                             } else {
                               GlobalWidgets(context).showSnackBar(
                                   content:
@@ -104,10 +139,20 @@ class _JoinClassScreenState extends State<JoinClassScreen> {
 class JoinClassDialog extends StatelessWidget {
   const JoinClassDialog({
     super.key,
-    required this.data,
+    required this.classId,
+    required this.className,
+    required this.classHour,
+    required this.classIcon,
+    required this.classDesc,
+    required this.teacherName,
   });
 
-  final Map<String, dynamic>? data;
+  final String classId;
+  final String className;
+  final String classHour;
+  final String classIcon;
+  final String classDesc;
+  final String teacherName;
 
   @override
   Widget build(BuildContext context) {
@@ -121,28 +166,27 @@ class JoinClassDialog extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Icon(
-                  Constants
-                      .subjectIconStringMap[data?["classIcon"] ?? "General"],
+                  Constants.subjectIconStringMap[classIcon] ?? Icons.book,
                   size: 65,
                 ),
               ),
               Text(
-                data?["className"] ?? "Class Name",
+                className,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                data?["teacherName"] ?? "Teacher Name",
+                teacherName,
                 style: Theme.of(context).textTheme.labelMedium,
               ),
               Text(
-                data?["classHour"] ?? "Hour",
+                classHour,
                 style: Theme.of(context).textTheme.labelMedium,
               ),
               SizedBox(
                 width: 225,
                 child: Text(
                   textAlign: TextAlign.center,
-                  data?["classDesc"] ?? "Description",
+                  classDesc,
                   style: Theme.of(context).textTheme.bodyMedium,
                   softWrap: true,
                 ),
@@ -167,7 +211,7 @@ class JoinClassDialog extends StatelessWidget {
                       final result = await FirebaseFunctions.instance
                           .httpsCallable("onClassJoin")
                           .call(
-                        <String, dynamic>{"classId": data?["classId"]},
+                        <String, dynamic>{"classId": classId},
                       );
                       if (result.data["res"]) {
                         if (context.mounted) {
@@ -177,7 +221,7 @@ class JoinClassDialog extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.pushReplacementNamed(
                               context, Constants.classHomeRoute,
-                              arguments: ClassHomeArgs(data?["classId"]));
+                              arguments: ClassHomeArgs(classId));
                         }
                       } else {
                         if (context.mounted) {
@@ -191,7 +235,7 @@ class JoinClassDialog extends StatelessWidget {
                     } on FirebaseFunctionsException {
                       if (context.mounted) {
                         GlobalWidgets(context).showSnackBar(
-                            content: "Error joining class.  Please Try Again.",
+                            content: "Error joining class. Please Try Again.",
                             backgroundColor:
                                 Theme.of(context).colorScheme.error);
                       }
