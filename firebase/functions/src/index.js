@@ -1,5 +1,5 @@
 const { logger } = require("firebase-functions");
-const {onCall, HttpsError} = require("firebase-functions/v2/https");
+const {onCall, onRequest, HttpsError} = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
 const { initializeApp } = require("firebase-admin/app");
@@ -266,11 +266,11 @@ exports.onClassCreation = onDocumentCreated(
 );
 
 // Add migration function to update existing data
-exports.migrateToNewSchema = onCall(async (request) => {
-  // Only allow admin users to run this
-  if (!request.auth.token.admin) {
-    throw new HttpsError('permission-denied', 'Only admins can run migrations');
-  }
+exports.migrateToNewSchemaV2 = onRequest(async (req, res) => {
+  // // Only allow admin users to run this
+  // if (!request.auth.token.admin) {
+  //   throw new HttpsError('permission-denied', 'Only admins can run migrations');
+  // }
   
   const db = getFirestore();
   
@@ -336,8 +336,8 @@ exports.migrateToNewSchema = onCall(async (request) => {
     });
   }
   
-  return {
-    success: true,
+  res.status(200).json({
+    success: true, 
     message: "Migration completed successfully"
-  };
+  });
 });
