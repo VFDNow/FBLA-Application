@@ -135,29 +135,43 @@ class _ClassHomeState extends State<ClassHome> {
       }
     }
 
+    List<String> groupStandings = groups.keys.toList();
+    // Sort the groups by their scores in descending order (highest first)
+    groupStandings.sort((a, b) {
+      // Get the scores, defaulting to 0 if not present
+      int scoreA = groups[a]?["score"] ?? 0;
+      int scoreB = groups[b]?["score"] ?? 0;
+      // Sort in descending order (higher scores first)
+      return scoreB.compareTo(scoreA);
+    });
+
     buildAssignmentWidgets(BuildContext context) {
       List<Widget> result = [];
 
       if (userGroup == "None") {
-        result.add(
-          Center(
-            child: Row(
-              children: [
-                Icon(Icons.error, size: 50, color: Colors.amberAccent,),
-                SizedBox(width: 20),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("You are not in any group!", style: Theme.of(context).textTheme.headlineMedium),
-                    Text("Ask your teacher to assign you to a group to access assignments.", style: Theme.of(context).textTheme.bodyMedium),
-                  ],
-                ),
-          
-              ],
-            ),
-          )
-        );
+        result.add(Center(
+          child: Row(
+            children: [
+              Icon(
+                Icons.error,
+                size: 50,
+                color: Colors.amberAccent,
+              ),
+              SizedBox(width: 20),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("You are not in any group!",
+                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text(
+                      "Ask your teacher to assign you to a group to access assignments.",
+                      style: Theme.of(context).textTheme.bodyMedium),
+                ],
+              ),
+            ],
+          ),
+        ));
         return result;
       }
 
@@ -169,10 +183,13 @@ class _ClassHomeState extends State<ClassHome> {
           assignmentState = AssignmentState.missed;
         }
 
+        Map<String, dynamic>? historyRef;
+
         if (userQuizHistory != null) {
           for (var history in userQuizHistory!) {
             if (history["assignmentId"] == assignment["assignmentId"]) {
               assignmentState = AssignmentState.completed;
+              historyRef = history;
             }
           }
         }
@@ -181,6 +198,8 @@ class _ClassHomeState extends State<ClassHome> {
           assignmentName: assignment["assignmentName"],
           dueDate: (assignment["dueDate"] as Timestamp).toDate(),
           assignmentState: assignmentState,
+          results:
+              historyRef != null ? historyRef["results"] as List<dynamic> : [],
           onTap: () {
             setState(() {
               isLoading = true;
@@ -190,9 +209,17 @@ class _ClassHomeState extends State<ClassHome> {
                 isLoading = false;
               });
               if (mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, Constants.quizRoute,
-                    (route) => false,
-                    arguments: QuizScreenArgs(quiz: value));
+                Navigator.pushNamed(context, Constants.quizRoute,
+                        // (route) => false,
+                        arguments: QuizScreenArgs(
+                            quiz: value, quizId: assignment["assignmentId"]))
+                    .then(
+                  (value) {
+                    setState(() {
+                      userQuizHistory = null;
+                    });
+                  },
+                );
               }
             }).onError((error, stackTrace) {
               setState(() {
@@ -369,15 +396,18 @@ class _ClassHomeState extends State<ClassHome> {
                       Divider(),
                       Expanded(
                         child: ListView.builder(
-                          itemCount: groups.length,
+                          itemCount: groupStandings.length,
                           itemBuilder: (context, index) {
-                            String current = groups.keys.elementAt(index);
+                            String current =
+                                groupStandings[index]; // Use the sorted list
                             return ListTile(
                               leading: Icon(
                                   Constants.groupNameIconStringMap[current] ??
                                       Icons.error),
                               title: Text(current),
-                              subtitle: Text("Score: ${index * 10}"),
+                              // Use the actual score from the data instead of index * 10
+                              subtitle: Text(
+                                  "Score: ${groups[current]?["score"] ?? 0}"),
                             );
                           },
                         ),

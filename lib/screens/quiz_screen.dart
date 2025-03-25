@@ -48,15 +48,28 @@ class QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  Future<bool> publishResults(Map<String, dynamic> quizData, String assignmentId, List<bool> scores) async {
-    final ref = FirebaseFirestore.instance.collection("quizzes").doc(quizData["quizId"]).collection("quizHistory").doc();
+  Future<bool> publishResults(Map<String, dynamic> quizData,
+      String assignmentId, List<bool> scores) async {
+    bool success = true;
+    if (assignmentId.isEmpty || quizData["classId"] == null) {
+      return false;
+    }
+    int stars = Grader().getStarValue(quizData["questions"], scores);
+    final ref = FirebaseFirestore.instance
+        .collection("classes")
+        .doc(quizData["classId"])
+        .collection("quizHistory")
+        .doc();
     await ref.set({
       "userId": FirebaseAuth.instance.currentUser?.uid,
       "assignmentId": assignmentId,
       "results": scores,
       "timestamp": Timestamp.now(),
+      "stars": stars,
+    }).onError((error, stackTrace) {
+      success = false;
     });
-    return true;
+    return success;
   }
 
   void traversalSwitchToResults(quizData) {
@@ -81,9 +94,27 @@ class QuizScreenState extends State<QuizScreen> {
       }
     }
 
-    await publishResults(quiz, (ModalRoute.of(context)!.settings.arguments as QuizScreenArgs).quizId, scores);
+    bool res = await publishResults(
+        quiz,
+        (ModalRoute.of(context)!.settings.arguments as QuizScreenArgs).quizId,
+        scores);
 
     if (mounted) {
+      if (!res) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error publishing results"),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Results published successfully"),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
       Navigator.pushReplacementNamed(context, Constants.quizResultsRoute,
           arguments: QuizResultsArgs(quiz: quiz, scores: scores));
     }
@@ -378,9 +409,13 @@ class QuizScreenState extends State<QuizScreen> {
                             ? "Review & Submit"
                             : questionData[currentPage]["questionTitle"] ??
                                 "Question Name",
-                                softWrap: true,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary, overflow: TextOverflow.clip),
+                        softWrap: true,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                overflow: TextOverflow.clip),
                       ),
                     ),
                   ),

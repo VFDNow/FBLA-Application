@@ -167,6 +167,51 @@ exports.removeUserFromGroup = onCall(async (request) => {
   return;
 });
 
+exports.onQuizResultsUploaded = onDocumentCreated(
+  "/classes/{classId}/quizHistory/{historyId}", async (event) => {
+
+  const classId = event.params.classId;
+  const quizHistoryId = event.params.historyId;
+  const eventData = event.data.data();
+  const db = getFirestore();
+  const classData = (await db.collection("classes").doc(classId).get()).data();
+
+  // Get stars from quiz results
+  const starsEarned = eventData["stars"] || 0;
+  
+  // Find user's group
+  let userGroup = "";
+  if (classData && classData.groups) {
+    // Loop through groups using Object.keys since it's an object
+    for (const groupName of Object.keys(classData.groups)) {
+      const group = classData.groups[groupName];
+      // Check if user is in this group
+      if (group.members && Array.isArray(group.members)) {
+        const memberFound = group.members.some(member => member.uId === eventData["userId"]);
+        if (memberFound) {
+          userGroup = groupName;
+          break;
+        }
+      }
+    }
+  }
+
+  if (userGroup === "") {
+    logger.log("User not found in any group");
+    return;
+  }
+
+  // Update group score using dot notation and increment
+  const updateData = {};
+  updateData[`groups.${userGroup}.score`] = FieldValue.increment(starsEarned);
+  
+  // Update the document
+  const classDoc = db.collection("classes").doc(classId);
+  await classDoc.update(updateData);
+  
+  logger.log(`Added ${starsEarned} stars to group ${userGroup}`);
+});
+
 // Runs when a class section is created
 exports.onClassCreation = onDocumentCreated(
   "/classes/{classId}",

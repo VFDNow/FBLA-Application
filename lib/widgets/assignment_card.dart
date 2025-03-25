@@ -9,12 +9,14 @@ class AssignmentCard extends StatelessWidget {
     required this.dueDate,
     this.onTap,
     this.assignmentState = AssignmentState.missed,
+    this.results = const [],
   });
 
   final String assignmentName;
   final DateTime dueDate;
   final VoidCallback? onTap;
   final AssignmentState assignmentState;
+  final List<dynamic> results;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,9 @@ class AssignmentCard extends StatelessWidget {
         stateText = "Missed";
         break;
     }
+
+    final questionCount = results.length;
+    final correctCount = results.where((result) => result).length;
 
     return Card(
       elevation: 4,
@@ -77,7 +82,7 @@ class AssignmentCard extends StatelessWidget {
                     ? Expanded(
                         child: Center(
                         child: Text(
-                          "0/0",
+                          "$correctCount/$questionCount",
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ))
