@@ -65,8 +65,8 @@ class FBLAApp extends StatelessWidget {
       Constants.classHomeRoute: (context) => ClassHome(),
       Constants.quizRoute: (context) => QuizScreen(),
       Constants.quizResultsRoute: (context) => QuizResultsScreen(),
-      '/teacher_home': (context) => TeacherHomeScreen(),
-      '/teacher_class_home': (context) => TeacherClassHomeScreen(),
+      Constants.teacherHomeRoute: (context) => TeacherHomeScreen(),
+      Constants.teacherClassHomeRoute: (context) => TeacherClassHomeScreen(),
     };
   }
 }

@@ -14,16 +14,26 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   final _formKey = GlobalKey<FormState>();
   String _className = '';
   String _classDescription = '';
+  String _sectionName = ''; // Add field for section name
   String currentIcon = "General";
   
   // Controllers for form fields to easily reset them
   final TextEditingController _classNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _sectionNameController = TextEditingController(); // Add controller
+
+  @override
+  void initState() {
+    super.initState();
+    // Set default section name
+    _sectionNameController.text = 'Period 1';
+  }
 
   @override
   void dispose() {
     _classNameController.dispose();
     _descriptionController.dispose();
+    _sectionNameController.dispose(); // Dispose section controller
     super.dispose();
   }
 
@@ -32,6 +42,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     _formKey.currentState!.reset();
     _classNameController.clear();
     _descriptionController.clear();
+    _sectionNameController.text = 'Period 1'; // Reset section name
     setState(() {
       currentIcon = "General";
     });
@@ -75,6 +86,26 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              // Add section name field
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _sectionNameController,
+                  decoration: InputDecoration(
+                    labelText: 'First Section Name (e.g., Period 1, Block A)',
+                    hintText: 'Enter a name for your first class section',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a section name';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _sectionName = value!;
+                  },
                 ),
               ),
               Padding(
@@ -159,14 +190,14 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                       'createdAt': FieldValue.serverTimestamp(),
                     });
                     
-                    // Now create the first section
+                    // Now create the first section using the user-provided section name
                     await FirebaseFirestore.instance.collection('classes').add({
                       'className': _className,
                       'classDesc': _classDescription,
                       'classIcon': currentIcon,
                       'owner': userId,
                       'baseClassId': baseClassId,
-                      'classHour': 'Section 1', // Default section name
+                      'classHour': _sectionName, // Use the user-provided section name
                       'createdAt': FieldValue.serverTimestamp(),
                     }).then((value) {
                       // Show success message
@@ -194,7 +225,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                                 onPressed: () {
                                   Navigator.of(context).pop(); // Close dialog
                                   // Navigate to teacher home page
-                                  Navigator.of(context).pushReplacementNamed('/teacher_home');
+                                  Navigator.of(context).pushReplacementNamed(Constants.teacherHomeRoute);
                                 },
                               ),
                             ],

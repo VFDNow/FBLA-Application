@@ -187,7 +187,7 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
           // Navigate to the teacher class home page, passing the class name and all section IDs
           List<String> sectionIds =
               sections.map((section) => section['classId'].toString()).toList();
-          Navigator.pushNamed(context, '/teacher_class_home',
+          Navigator.pushNamed(context, Constants.teacherClassHomeRoute,
               arguments: TeacherClassHomeArgs(
                   className, sectionIds, sections.first['classIcon']));
         },

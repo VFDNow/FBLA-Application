@@ -6,7 +6,8 @@ class Constants {
 
   // Routes
   static const String homeRoute = "/home";
-  static const String teacherHomeRoute = "/teacher-home";
+  static const String teacherHomeRoute = "/teacher_home"; // Changed from "/teacher-home"
+  static const String teacherClassHomeRoute = "/teacher_class_home"; // Added new constant
   static const String signInRoute = "/sign-in";
   static const String firstTimeSignInRoute = "/first-time-sign-in";
   static const String profileRoute = "/profile";

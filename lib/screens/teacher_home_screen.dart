@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/screens/class_home_screen.dart';
-import 'package:fbla_application/screens/teacher_class_home_screen.dart'; // Add this import
+import 'package:fbla_application/screens/teacher_class_home_screen.dart'; 
 import 'package:fbla_application/utils/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart' hide NavigationDrawer;
@@ -110,7 +110,6 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Modified heading without the create class button
                     Text(
                       'My Classes',
                       style: Theme.of(context).textTheme.headlineMedium,
@@ -136,75 +135,37 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                         itemBuilder: (context, index) {
                           String className = groupedClasses.keys.elementAt(index);
                           List<Map<String, dynamic>> classItems = groupedClasses[className]!;
+                          String classIcon = classItems.first['classIcon'] ?? 'General';
                           
-                          // If there's only one hour for this class name
-                          if (classItems.length == 1) {
-                            Map<String, dynamic> classData = classItems.first;
-                            return Card(
-                              margin: EdgeInsets.only(bottom: 12.0),
-                              child: ListTile(
-                                leading: Icon(
-                                  Constants.subjectIconStringMap[classData['classIcon']] ?? Icons.book,
-                                  size: 36,
-                                ),
-                                title: Text(className),
-                                subtitle: Text('Hour: ${classData['classHour'] ?? 'N/A'}'),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    Constants.classHomeRoute,
-                                    arguments: ClassHomeArgs(classData['classId']),
-                                  );
-                                },
+                          // Always display one card per class name
+                          return Card(
+                            margin: EdgeInsets.only(bottom: 12.0),
+                            child: ListTile(
+                              leading: Icon(
+                                Constants.subjectIconStringMap[classIcon] ?? Icons.book,
+                                size: 36,
                               ),
-                            );
-                          } 
-                          // If there are multiple hours for this class name
-                          else {
-                            return Card(
-                              margin: EdgeInsets.only(bottom: 12.0),
-                              child: ExpansionTile(
-                                leading: Icon(
-                                  Constants.subjectIconStringMap[classItems.first['classIcon']] ?? Icons.book,
-                                  size: 36,
-                                ),
-                                title: Text(className),
-                                subtitle: Text('${classItems.length} sections'),
-                                // Replace onTap with onExpansionChanged
-                                onExpansionChanged: (isExpanded) {
-                                  if (!isExpanded) {
-                                    // Only navigate when clicking to expand, not to collapse
-                                    // Navigate directly to teacher class home
-                                    List<String> sectionIds =
-                                        classItems.map((section) => section['classId'].toString()).toList();
-                                    String? baseClassId = classItems.first['baseClassId'];
-                                    
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/teacher_class_home',
-                                      arguments: TeacherClassHomeArgs(
-                                          className, sectionIds, classItems.first['classIcon'], 
-                                          baseClassId: baseClassId),
-                                    );
-                                  }
-                                },
-                                children: classItems.map((classData) {
-                                  return ListTile(
-                                    contentPadding: EdgeInsets.only(left: 72.0, right: 16.0),
-                                    title: Text('Hour: ${classData['classHour'] ?? 'N/A'}'),
-                                    subtitle: Text(classData['classDesc'] ?? ''),
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        Constants.classHomeRoute,
-                                        arguments: ClassHomeArgs(classData['classId']),
-                                      );
-                                    },
-                                  );
-                                }).toList(),
-                              ),
-                            );
-                          }
+                              title: Text(className),
+                              subtitle: classItems.length > 0
+                                ? Text('${classItems.length} ${classItems.length == 1 ? 'section' : 'sections'}')
+                                : Text('No sections - please create one'),
+                              onTap: () {
+                                // Always navigate to the teacher class home screen
+                                List<String> sectionIds =
+                                    classItems.map((section) => section['classId'].toString()).toList();
+                                String? baseClassId = classItems.first['baseClassId'];
+                                
+                                Navigator.pushNamed(
+                                  context,
+                                  Constants.teacherClassHomeRoute,
+                                  arguments: TeacherClassHomeArgs(
+                                    className, sectionIds, classIcon, 
+                                    baseClassId: baseClassId
+                                  ),
+                                );
+                              },
+                            ),
+                          );
                         },
                       ),
                   ],
