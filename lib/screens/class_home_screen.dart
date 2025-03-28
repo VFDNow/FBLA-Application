@@ -202,35 +202,51 @@ class _ClassHomeState extends State<ClassHome> {
           results:
               historyRef != null ? historyRef["results"] as List<dynamic> : [],
           onTap: () {
+            // Capture assignment details before async operations
+            final String quizPath = assignment["quizPath"] ?? "notHere";
+            final String assignmentId = assignment["assignmentId"];
+            
             setState(() {
               isLoading = true;
             });
-            getQuizData(assignment["quizPath"] ?? "notHere").then((value) {
+            
+            getQuizData(quizPath).then((value) {
+              // Check if widget is still in tree before updating state
+              if (!mounted) return;
+              
               setState(() {
                 isLoading = false;
               });
-              if (mounted) {
-                Navigator.pushNamed(context, Constants.quizRoute,
-                        // (route) => false,
-                        arguments: QuizScreenArgs(
-                            quiz: value, quizId: assignment["assignmentId"]))
-                    .then(
-                  (value) {
-                    setState(() {
-                      userQuizHistory = null;
-                    });
-                  },
-                );
-              }
+              
+              Navigator.pushNamed(context, Constants.quizRoute,
+                  arguments: QuizScreenArgs(
+                      quiz: value, quizId: assignmentId)
+              ).then((value) {
+                // Check if widget is still in tree before updating state
+                if (!mounted) return;
+                
+                setState(() {
+                  userQuizHistory = null;
+                });
+              });
             }).onError((error, stackTrace) {
+              // Check if widget is still in tree before updating state
+              if (!mounted) return;
+              
               setState(() {
                 isLoading = false;
               });
-              if (mounted) {
-                GlobalWidgets(context).showSnackBar(
-                    content: "Error loading quiz.",
-                    backgroundColor: Theme.of(context).colorScheme.error);
-              }
+              
+              // Pre-capture the context-dependent objects
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final errorColor = Theme.of(context).colorScheme.error;
+              
+              scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text("Error loading quiz."),
+                    backgroundColor: errorColor
+                  )
+              );
             });
           },
         ));

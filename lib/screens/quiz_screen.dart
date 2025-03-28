@@ -94,27 +94,31 @@ class QuizScreenState extends State<QuizScreen> {
       }
     }
 
-    bool res = await publishResults(
-        quiz,
-        (ModalRoute.of(context)!.settings.arguments as QuizScreenArgs).quizId,
-        scores);
+    // Capture the arguments before the async operation
+    final String quizId = (ModalRoute.of(context)!.settings.arguments as QuizScreenArgs).quizId;
 
+    bool res = await publishResults(quiz, quizId, scores);
+
+    // Check if widget is still in the tree after async operation
+    if (!mounted) return;
+
+    if (!res) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error publishing results"),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Results published successfully"),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+    // Only navigate if still mounted
     if (mounted) {
-      if (!res) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error publishing results"),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Results published successfully"),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
       Navigator.pushReplacementNamed(context, Constants.quizResultsRoute,
           arguments: QuizResultsArgs(quiz: quiz, scores: scores));
     }

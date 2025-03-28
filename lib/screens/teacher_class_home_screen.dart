@@ -579,7 +579,7 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
         'assignmentName': assignmentName,
         'quizPath': quizPath,
         'dueDate': Timestamp.fromDate(dueDate),
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': Timestamp.now(), // Use regular Timestamp instead of FieldValue.serverTimestamp()
       };
       
       // Add the assignment to each selected section

@@ -245,8 +245,10 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       
       _showSnackBar('Quiz saved successfully!');
       
-      // Navigate back or to assignment creation
-      Navigator.pop(context, quizPath);
+      // Check if widget is still mounted before using context
+      if (mounted) {
+        Navigator.pop(context, quizPath);
+      }
     } catch (e) {
       _showSnackBar('Error saving quiz: $e');
     } finally {
@@ -575,6 +577,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
               final answerIndex = entry.key;
               final answer = entry.value;
               final isCorrect = correctAnswers.contains(answer['answerId']);
+              final hasIcon = answer['answerIcon'] != null;
               
               return Container(
                 margin: EdgeInsets.only(bottom: 8),
@@ -604,6 +607,15 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                         : null,
                     ),
                     SizedBox(width: 8),
+                    // Show icon if available
+                    if (hasIcon) ...[
+                      Icon(
+                        Constants.questionIconStringMap[answer['answerIcon']],
+                        size: 20,
+                        color: isCorrect ? Colors.green[800] : Colors.grey[700],
+                      ),
+                      SizedBox(width: 6),
+                    ],
                     Expanded(
                       child: Text(
                         answer['answerBody'].isNotEmpty
@@ -1263,7 +1275,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ),
             SizedBox(height: 16),
             
-            // Quiz name
+            // Quiz name - add onChanged to update quizData immediately
             TextFormField(
               initialValue: quizData['quizName'],
               decoration: InputDecoration(
@@ -1279,11 +1291,16 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
               onSaved: (value) {
                 quizData['quizName'] = value?.trim() ?? '';
               },
+              onChanged: (value) {
+                setState(() {
+                  quizData['quizName'] = value.trim();
+                });
+              },
             ),
             
             SizedBox(height: 16),
             
-            // Quiz description
+            // Quiz description - add onChanged to update quizData immediately
             TextFormField(
               initialValue: quizData['quizDesc'],
               decoration: InputDecoration(
@@ -1294,6 +1311,11 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
               maxLines: 3,
               onSaved: (value) {
                 quizData['quizDesc'] = value?.trim() ?? '';
+              },
+              onChanged: (value) {
+                setState(() {
+                  quizData['quizDesc'] = value.trim();
+                });
               },
             ),
             
@@ -1558,13 +1580,11 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     quizData['quizName'].isEmpty ? 'Untitled Quiz' : quizData['quizName'],
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  if (quizData['quizDesc'].isNotEmpty) ...[
-                    SizedBox(height: 8),
-                    Text(
-                      quizData['quizDesc'],
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
+                  SizedBox(height: 8),
+                  Text(
+                    quizData['quizDesc'].isEmpty ? 'No description provided' : quizData['quizDesc'],
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   SizedBox(height: 16),
                   
                   // Quiz settings
