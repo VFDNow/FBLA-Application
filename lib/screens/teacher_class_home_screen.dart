@@ -124,12 +124,8 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
           }
           
           // Get student count for this section
-          QuerySnapshot studentsSnapshot = await FirebaseFirestore.instance
-              .collection('users')
-              .where('classes', arrayContains: {'classId': sectionId})
-              .get();
-              
-          sectionData['studentCount'] = studentsSnapshot.docs.length;
+          List<dynamic> students = sectionData['students'] ?? [];
+          sectionData['studentCount'] = students.length;
           
           loadedSections.add(sectionData);
         }
@@ -157,10 +153,10 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
     try {
       if (args.sectionIds.isEmpty) return;
       
-      List<Map<String, dynamic>> loadedAssignments = [];
-      
-      // Map to track which sections each assignment is assigned to
-      Map<String, List<String>> assignmentSections = {};
+      // Track unique assignments by ID for display in UI
+      Map<String, Map<String, dynamic>> uniqueAssignments = {};
+      Map<String, List<String>> assignmentSectionMap = {};
+      Map<String, Map<String, dynamic>> assignmentResults = {};
       
       // Load assignments from all sections
       for (String sectionId in args.sectionIds) {
@@ -181,27 +177,160 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
         for (var assignment in sectionAssignments) {
           String assignmentId = assignment['assignmentId'];
           
-          // Track which sections this assignment appears in
-          if (!assignmentSections.containsKey(assignmentId)) {
-            assignmentSections[assignmentId] = [];
+          // Track which sections contain this assignment (for display purposes only)
+          if (!assignmentSectionMap.containsKey(assignmentId)) {
+            assignmentSectionMap[assignmentId] = [];
+            uniqueAssignments[assignmentId] = assignment as Map<String, dynamic>;
             
-            // Add the assignment data only once (the first time we see it)
-            loadedAssignments.add({
-              ...assignment as Map<String, dynamic>,
-              'sections': <String>[], // Will be filled below
-            });
+            // Initialize results tracking for this assignment
+            assignmentResults[assignmentId] = {
+              'totalStudents': 0,
+              'completedCount': 0, 
+              'overallCorrect': 0,
+              'overallTotal': 0,
+              'sectionResults': <String, Map<String, dynamic>>{}
+            };
           }
           
-          // Add this section to the assignment's sections list
-          assignmentSections[assignmentId]!.add(sectionHour);
+          assignmentSectionMap[assignmentId]?.add(sectionHour);
+          
+          // Initialize section results
+          if (!assignmentResults[assignmentId]!['sectionResults'].containsKey(sectionHour)) {
+            assignmentResults[assignmentId]!['sectionResults'][sectionHour] = {
+              'correct': 0,
+              'total': 0,
+              'completed': 0,
+              'studentCount': 0,
+              'sectionId': sectionId // Store section ID for later use
+            };
+          }
+          
+          // Get student count directly from the students array in the class document
+          List<dynamic> students = sectionData['students'] ?? [];
+          int studentCount = students.length;
+          
+          // Update counts
+          assignmentResults[assignmentId]!['totalStudents'] += studentCount;
+          assignmentResults[assignmentId]!['sectionResults'][sectionHour]['studentCount'] = studentCount;
+          
+          // Load quiz results for this section and assignment
+          try {
+            QuerySnapshot resultsSnapshot = await FirebaseFirestore.instance
+                .collection('classes')
+                .doc(sectionId)
+                .collection('quizHistory')
+                .where('assignmentId', isEqualTo: assignmentId)
+                .get();
+            
+            // Process each quiz result
+            for (var resultDoc in resultsSnapshot.docs) {
+              Map<String, dynamic> resultData = resultDoc.data() as Map<String, dynamic>;
+              List<dynamic> results = resultData['results'] ?? [];
+              
+              if (results.isNotEmpty) {
+                // Count correct answers
+                int correct = results.where((result) => result == true).length;
+                int total = results.length;
+                
+                // Update overall metrics
+                assignmentResults[assignmentId]!['completedCount']++;
+                assignmentResults[assignmentId]!['overallCorrect'] += correct;
+                assignmentResults[assignmentId]!['overallTotal'] += total;
+                
+                // Update section-specific metrics
+                Map<String, dynamic> sectionResult = assignmentResults[assignmentId]!['sectionResults'][sectionHour];
+                sectionResult['completed']++;
+                sectionResult['correct'] += correct;
+                sectionResult['total'] += total;
+              }
+            }
+          } catch (e) {
+            print("Error loading quiz results for section $sectionId: $e");
+          }
         }
       }
       
-      // Add section information to assignments
-      for (var assignment in loadedAssignments) {
-        String assignmentId = assignment['assignmentId'];
-        assignment['sections'] = assignmentSections[assignmentId] ?? [];
+      // Preload quiz data for all unique assignments
+      for (String assignmentId in uniqueAssignments.keys) {
+        try {
+          final assignment = uniqueAssignments[assignmentId]!;
+          final quizPathRef = FirebaseStorage.instance
+              .ref()
+              .child("quizzes/${assignment['quizPath']}.json");
+          
+          final quizData = await quizPathRef.getData();
+          if (quizData != null) {
+            final quizJson = utf8.decode(quizData);
+            final quiz = json.decode(quizJson);
+            
+            // Store preloaded quiz data in the assignment
+            assignment['preloadedQuiz'] = quiz;
+            
+            // Preload question statistics
+            Map<int, Map<String, dynamic>> questionStats = {};
+            int totalAttempts = 0;
+            
+            // Initialize stats for each question
+            if (quiz['questions'] != null && quiz['questions'] is List) {
+              for (int i = 0; i < quiz['questions'].length; i++) {
+                questionStats[i] = {
+                  'correct': 0,
+                  'attempts': 0,
+                };
+              }
+            }
+            
+            // For each section, fetch quiz history for this assignment
+            for (String sectionId in args.sectionIds) {
+              try {
+                // Get quiz history for this section and assignment
+                QuerySnapshot resultsSnapshot = await FirebaseFirestore.instance
+                    .collection('classes')
+                    .doc(sectionId)
+                    .collection('quizHistory')
+                    .where('assignmentId', isEqualTo: assignmentId)
+                    .get();
+                
+                // Process each quiz result
+                for (var resultDoc in resultsSnapshot.docs) {
+                  totalAttempts++;
+                  Map<String, dynamic> resultData = resultDoc.data() as Map<String, dynamic>;
+                  List<dynamic> results = resultData['results'] ?? [];
+                  
+                  // Count results for each question
+                  for (int i = 0; i < results.length; i++) {
+                    if (i < questionStats.length) {
+                      questionStats[i]!['attempts']++;
+                      if (results[i] == true) {
+                        questionStats[i]!['correct']++;
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                print("Error preloading quiz results for section $sectionId: $e");
+              }
+            }
+            
+            // Store preloaded question stats in the assignment
+            assignment['questionStats'] = questionStats;
+            assignment['hasResults'] = totalAttempts > 0;
+          }
+        } catch (e) {
+          print("Error preloading quiz data for assignment ${assignmentId}: $e");
+          // Continue even if preloading fails for an assignment
+        }
       }
+      
+      // Convert to list for UI and attach section/results information
+      List<Map<String, dynamic>> loadedAssignments = [];
+      uniqueAssignments.forEach((assignmentId, assignmentData) {
+        loadedAssignments.add({
+          ...assignmentData,
+          'displaySections': assignmentSectionMap[assignmentId] ?? [], // For display only
+          'results': assignmentResults[assignmentId] ?? {},
+        });
+      });
       
       if (mounted) {
         setState(() {
@@ -235,8 +364,22 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
     );
   }
 
-  // Method to preview quiz
+  // Method to preview quiz - now uses preloaded data
   Future<void> _previewQuiz(Map<String, dynamic> assignment) async {
+    // If we have preloaded quiz data, use it immediately
+    if (assignment.containsKey('preloadedQuiz')) {
+      showDialog(
+        context: context,
+        builder: (dialogContext) => QuizPreviewDialog(
+          quiz: assignment['preloadedQuiz'],
+          questionStats: assignment['questionStats'],
+          hasResults: assignment['hasResults'] ?? false,
+        ),
+      );
+      return;
+    }
+    
+    // If not preloaded, load it on demand (fallback)
     if (!mounted) return;
     
     setState(() {
@@ -256,20 +399,67 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
       final quizJson = utf8.decode(quizData);
       final quiz = json.decode(quizJson);
       
+      // Now fetch quiz statistics for all sections
+      Map<int, Map<String, dynamic>> questionStats = {};
+      int totalAttempts = 0;
+      
+      // Initialize stats for each question
+      if (quiz['questions'] != null && quiz['questions'] is List) {
+        for (int i = 0; i < quiz['questions'].length; i++) {
+          questionStats[i] = {
+            'correct': 0,
+            'attempts': 0,
+          };
+        }
+      }
+      
+      // For each section, fetch quiz history for this assignment
+      for (String sectionId in args.sectionIds) {
+        try {
+          // Get quiz history for this section and assignment
+          QuerySnapshot resultsSnapshot = await FirebaseFirestore.instance
+              .collection('classes')
+              .doc(sectionId)
+              .collection('quizHistory')
+              .where('assignmentId', isEqualTo: assignment['assignmentId'])
+              .get();
+          
+          // Process each quiz result
+          for (var resultDoc in resultsSnapshot.docs) {
+            totalAttempts++;
+            Map<String, dynamic> resultData = resultDoc.data() as Map<String, dynamic>;
+            List<dynamic> results = resultData['results'] ?? [];
+            
+            // Count results for each question
+            for (int i = 0; i < results.length; i++) {
+              if (i < questionStats.length) {
+                questionStats[i]!['attempts']++;
+                if (results[i] == true) {
+                  questionStats[i]!['correct']++;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          print("Error loading quiz results for section $sectionId: $e");
+        }
+      }
+      
       if (!mounted) return;
       
       setState(() {
         isLoading = false;
       });
       
-      // Capture the context before async operation
-      final currentContext = context;
-      
-      // Show the quiz preview dialog
+      // Show the quiz preview dialog with statistics
       if (mounted) {
         showDialog(
-          context: currentContext,
-          builder: (dialogContext) => QuizPreviewDialog(quiz: quiz),
+          context: context,
+          builder: (dialogContext) => QuizPreviewDialog(
+            quiz: quiz,
+            questionStats: questionStats,
+            hasResults: totalAttempts > 0,
+          ),
         );
       }
     } catch (e) {
@@ -590,20 +780,12 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
     // Early return if widget is disposed
     if (!mounted) return;
     
-    // Get current assignment sections
-    List<String> currentSections = List<String>.from(assignment['sections'] ?? []);
-    
-    // Get section IDs and hours
+    // Get section IDs and hours for display
     Map<String, String> sectionHoursMap = {};
-    for (var section in sections) {
-      sectionHoursMap[section['classId']] = section['classHour'] ?? 'Unknown';
-    }
     
-    // Capture context before async operation
-    final currentContext = context;
-    
-    // Find sections where this assignment is currently assigned
+    // Find out which sections already have this assignment
     Set<String> assignedSectionIds = {};
+    
     for (String sectionId in args.sectionIds) {
       DocumentSnapshot sectionDoc = await FirebaseFirestore.instance
           .collection('classes')
@@ -613,8 +795,9 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
       if (!sectionDoc.exists) continue;
       
       Map<String, dynamic> sectionData = sectionDoc.data() as Map<String, dynamic>;
-      List<dynamic> sectionAssignments = sectionData['assignments'] ?? [];
+      sectionHoursMap[sectionId] = sectionData['classHour'] ?? 'Unknown';
       
+      List<dynamic> sectionAssignments = sectionData['assignments'] ?? [];
       bool hasAssignment = sectionAssignments.any(
         (a) => a['assignmentId'] == assignment['assignmentId']
       );
@@ -628,6 +811,9 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
     List<String> unassignedSectionIds = args.sectionIds
         .where((id) => !assignedSectionIds.contains(id))
         .toList();
+    
+    // Capture context before async operation
+    final currentContext = context;
     
     // Check mounted state before showing UI
     if (!mounted) return;
@@ -658,13 +844,22 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
             });
             
             try {
-              // Add assignment to each selected section
+              // Copy assignment to each selected section
               for (String sectionId in selectedSectionIds) {
+                // Create a clean copy of the assignment data to add to the other section
+                Map<String, dynamic> assignmentCopy = {
+                  'assignmentId': assignment['assignmentId'],
+                  'assignmentName': assignment['assignmentName'],
+                  'quizPath': assignment['quizPath'],
+                  'dueDate': assignment['dueDate'],
+                  // Add other necessary fields, but NOT any section-specific data
+                };
+                
                 await FirebaseFirestore.instance
                     .collection('classes')
                     .doc(sectionId)
                     .update({
-                      'assignments': FieldValue.arrayUnion([assignment])
+                      'assignments': FieldValue.arrayUnion([assignmentCopy])
                     });
               }
               
@@ -1005,64 +1200,268 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
               itemCount: assignments.length,
               itemBuilder: (context, index) {
                 final assignment = assignments[index];
-                final List<String> assignedSections = 
-                    List<String>.from(assignment['sections'] ?? []);
+                final List<String> displaySections = 
+                    List<String>.from(assignment['displaySections'] ?? []);
                 
-                return Card(
-                  margin: EdgeInsets.only(bottom: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Check if assignment is already assigned to all sections
+                final bool assignedToAllSections = displaySections.length >= sections.length;
+                
+                // Get results data
+                final Map<String, dynamic> results = assignment['results'] ?? {};
+                final int totalStudents = results['totalStudents'] ?? 0;
+                final int completedCount = results['completedCount'] ?? 0;
+                final int overallCorrect = results['overallCorrect'] ?? 0;
+                final int overallTotal = results['overallTotal'] ?? 0;
+                
+                // Calculate overall completion rate and score
+                final double completionRate = totalStudents > 0 ? completedCount / totalStudents : 0;
+                final double overallScore = overallTotal > 0 ? overallCorrect / overallTotal : 0;
+                
+                // Section results
+                final Map<String, dynamic> sectionResults = 
+                    results['sectionResults'] ?? <String, Map<String, dynamic>>{};
+                
+                return InkWell(
+                  onTap: () => _previewQuiz(assignment),
+                  child: Card(
+                    margin: EdgeInsets.only(bottom: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.assignment),
+                          title: Text(assignment['assignmentName'] ?? 'Unnamed Assignment'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (assignment['dueDate'] != null)
+                                Text('Due: ${DateFormat('EEE, MMM. d, h:mm a').format((assignment['dueDate'] as Timestamp).toDate())}'),
+                            ],
+                          ),
+                        ),
+                        
+                        // Results Section if there are any
+                        if (completedCount > 0) 
+                          _buildResultsSection(overallScore, completionRate, sectionResults),
+                        
+                        // No Results Message if needed
+                        if (completedCount == 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: Text(
+                              'No quiz results available yet',
+                              style: TextStyle(fontStyle: FontStyle.italic),
+                            ),
+                          ),
+                        
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Assigned to:', style: TextStyle(fontWeight: FontWeight.bold)),
+                              SizedBox(height: 4),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 4,
+                                children: [
+                                  for (var section in displaySections)
+                                    Chip(
+                                      label: Text(section),
+                                      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                                      labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // Only show button if there are sections left to assign to
+                                  if (!assignedToAllSections)
+                                    TextButton.icon(
+                                      icon: Icon(Icons.add_circle_outline),
+                                      label: Text('Assign to More Sections'),
+                                      onPressed: () => _assignToMoreSections(assignment),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build the results section for each assignment
+  Widget _buildResultsSection(double overallScore, double completionRate, Map<String, dynamic> sectionResults) {
+    // Color for overall score (green to red) based on percentage
+    Color getScoreColor(double score) {
+      if (score >= 0.9) return Colors.green;
+      if (score >= 0.8) return Colors.green[600]!;
+      if (score >= 0.7) return Colors.lime;
+      if (score >= 0.6) return Colors.yellow[700]!;
+      if (score >= 0.5) return Colors.orange;
+      return Colors.red;
+    }
+    
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.fromLTRB(16, 0, 16, 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Results', 
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Row(
+                children: [
+                  Icon(Icons.people, size: 14),
+                  SizedBox(width: 4),
+                  Text('${(completionRate * 100).toStringAsFixed(0)}% completion',
+                    style: TextStyle(fontSize: 13),
+                  )
+                ],
+              )
+            ],
+          ),
+          
+          SizedBox(height: 8),
+          
+          // Overall progress bar for completion rate
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: completionRate,
+              backgroundColor: Colors.grey[200],
+              minHeight: 8.0, // Change from int to double
+            ),
+          ),
+          
+          SizedBox(height: 12),
+          
+          // Overall score
+          Row(
+            children: [
+              Text('Overall: ', style: TextStyle(fontWeight: FontWeight.w500)),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: getScoreColor(overallScore).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: getScoreColor(overallScore)),
+                ),
+                child: Text(
+                  '${(overallScore * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    color: getScoreColor(overallScore),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          SizedBox(height: 12),
+          
+          // Section breakdown
+          if (sectionResults.isNotEmpty) ...[
+            Text('Section Breakdown:', style: TextStyle(fontWeight: FontWeight.w500)),
+            SizedBox(height: 8),
+            Column(
+              children: sectionResults.entries.map((entry) {
+                final sectionHour = entry.key;
+                final data = entry.value;
+                
+                final completed = data['completed'] ?? 0;
+                final studentCount = data['studentCount'] ?? 0;
+                final correct = data['correct'] ?? 0;
+                final total = data['total'] ?? 0;
+                
+                final sectionScore = total > 0 ? correct / total : 0.0;
+                final sectionCompletionRate = studentCount > 0 ? (completed / studentCount).toDouble() : 0.0;
+                
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
                     children: [
-                      ListTile(
-                        leading: Icon(Icons.assignment),
-                        title: Text(assignment['assignmentName'] ?? 'Unnamed Assignment'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      Expanded(
+                        flex: 2,
+                        child: Text(sectionHour),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Stack(
                           children: [
-                            if (assignment['dueDate'] != null)
-                              Text('Due: ${DateFormat('EEE, MMM. d, h:mm a').format((assignment['dueDate'] as Timestamp).toDate())}'),
+                            // Background
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: sectionCompletionRate,
+                                backgroundColor: Colors.grey[200],
+                                minHeight: 20.0, // Change from int to double
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.grey[300]!
+                                ),
+                              ),
+                            ),
+                            // Score text
+                            Container(
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(vertical: 3),
+                              child: Text(
+                                '${(sectionScore * 100).toStringAsFixed(0)}% (${completed}/${studentCount})',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ],
                         ),
-                        onTap: () => _previewQuiz(assignment),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Assigned to:', style: TextStyle(fontWeight: FontWeight.bold)),
-                            SizedBox(height: 4),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                for (var section in assignedSections)
-                                  Chip(
-                                    label: Text(section),
-                                    backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                                    labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                                  ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton.icon(
-                                  icon: Icon(Icons.add_circle_outline),
-                                  label: Text('Assign to More Sections'),
-                                  onPressed: () => _assignToMoreSections(assignment),
-                                ),
-                              ],
-                            ),
-                          ],
+                      SizedBox(width: 8),
+                      Container(
+                        width: 40,
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: getScoreColor(sectionScore).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: getScoreColor(sectionScore)),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${(sectionScore * 100).toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            color: getScoreColor(sectionScore),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 );
-              },
+              }).toList(),
             ),
+          ],
         ],
       ),
     );
@@ -1072,8 +1471,15 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
 // Add a new QuizPreviewDialog widget
 class QuizPreviewDialog extends StatelessWidget {
   final Map<String, dynamic> quiz;
+  final Map<int, Map<String, dynamic>>? questionStats;
+  final bool hasResults;
   
-  const QuizPreviewDialog({Key? key, required this.quiz}) : super(key: key);
+  const QuizPreviewDialog({
+    Key? key, 
+    required this.quiz, 
+    this.questionStats, 
+    this.hasResults = false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1099,7 +1505,8 @@ class QuizPreviewDialog extends StatelessWidget {
                 itemCount: (quiz['questions'] as List?)?.length ?? 0,
                 itemBuilder: (context, index) {
                   final question = quiz['questions'][index];
-                  return _buildQuestionCard(context, question, index);
+                  final stats = questionStats?[index];
+                  return _buildQuestionCard(context, question, index, stats);
                 },
               ),
             ),
@@ -1113,7 +1520,7 @@ class QuizPreviewDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildQuestionCard(BuildContext context, Map<String, dynamic> question, int index) {
+  Widget _buildQuestionCard(BuildContext context, Map<String, dynamic> question, int index, Map<String, dynamic>? stats) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
       child: Padding(
@@ -1121,11 +1528,21 @@ class QuizPreviewDialog extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Q${index + 1}: ${question['questionTitle'] ?? 'Question'}',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Q${index + 1}: ${question['questionTitle'] ?? 'Question'}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                
+                // Show question stats if available
+                if (hasResults && stats != null)
+                  _buildQuestionStatsBadge(context, stats),
+              ],
             ),
             SizedBox(height: 4),
             Text(
@@ -1149,6 +1566,49 @@ class QuizPreviewDialog extends StatelessWidget {
               _buildAIGradedMessage(context),
           ],
         ),
+      ),
+    );
+  }
+
+  // New method to display question statistics
+  Widget _buildQuestionStatsBadge(BuildContext context, Map<String, dynamic> stats) {
+    final int correct = stats['correct'] ?? 0;
+    final int attempts = stats['attempts'] ?? 0;
+    final double successRate = attempts > 0 ? correct / attempts : 0;
+    
+    // Color for score (green to red) based on percentage - same as in _buildResultsSection
+    Color getScoreColor(double score) {
+      if (score >= 0.9) return Colors.green;
+      if (score >= 0.8) return Colors.green[600]!;
+      if (score >= 0.7) return Colors.lime;
+      if (score >= 0.6) return Colors.yellow[700]!;
+      if (score >= 0.5) return Colors.orange;
+      return Colors.red;
+    }
+    
+    final scoreColor = getScoreColor(successRate);
+    
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: scoreColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: scoreColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.analytics, size: 16, color: scoreColor),
+          SizedBox(width: 4),
+          Text(
+            '${(successRate * 100).toStringAsFixed(0)}% correct',
+            style: TextStyle(
+              color: scoreColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }
