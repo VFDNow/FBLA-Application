@@ -11,6 +11,7 @@ import 'package:fbla_application/widgets/user_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart' hide ErrorWidget;
+import 'package:share_plus/share_plus.dart';
 
 class ClassHomeArgs {
   final String classId;
@@ -337,11 +338,53 @@ class _ClassHomeState extends State<ClassHome> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(
-                              Constants.groupNameIconStringMap[userGroup] ??
-                                  Icons.error,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              size: 150,
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Constants.groupNameIconStringMap[userGroup] ??
+                                      Icons.error,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  size: 150,
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Share.share(
+                                            "Team $userGroup is on a mission to reach the top of the leaderboard in ${classData?["className"] ?? "class"}! Join us in completing our assignments and earning points. Together we can win this! 💪🔥 #TeamSuccess #${userGroup.replaceAll(" ", "")}")
+                                        .then((result) {
+                                      if (result.status ==
+                                              ShareResultStatus.success &&
+                                          context.mounted) {
+                                        GlobalWidgets(context).showSnackBar(
+                                            content: "Rally Sent!",
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary);
+                                      }
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
+                                  ),
+                                  child: SizedBox(
+                                    width:
+                                        100, // Set a fixed width for the button content
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.share),
+                                        Expanded(
+                                          child: Center(
+                                            child: Text("Rally Group"),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -406,8 +449,36 @@ class _ClassHomeState extends State<ClassHome> {
                                       Icons.error),
                               title: Text(current),
                               // Use the actual score from the data instead of index * 10
-                              subtitle: Text(
-                                  "Score: ${groups[current]?["score"] ?? 0}"),
+                              subtitle: Text("#${index + 1}"),
+                              trailing: Container(
+                                width: 150,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 30,
+                                    ),
+                                    Card(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer,
+                                        child: SizedBox(
+                                          width: 100,
+                                          height: 50,
+                                          child: Center(
+                                            child: Text(
+                                              "${groups[current]?["score"] ?? 0}",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineSmall,
+                                            ),
+                                          ),
+                                        )),
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         ),
