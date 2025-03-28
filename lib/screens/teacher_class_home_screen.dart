@@ -8,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:fbla_application/screens/quiz_creation_screen.dart';
 
 class TeacherClassHomeArgs {
   String className;
@@ -344,24 +345,268 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen> with Si
   
   // Method to create an assignment
   Future<void> _createAssignment() async {
-    // We'll implement this later with a dialog
-    showDialog(
+    // Variables for the form
+    TextEditingController nameController = TextEditingController();
+    DateTime selectedDate = DateTime.now().add(Duration(days: 7)); // Default due date is one week from now
+    TimeOfDay selectedTime = TimeOfDay.now(); // Default due time is current time
+    
+    // Show dialog to collect assignment details
+    await showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Create Assignment'),
-          content: Text('Assignment creation feature coming soon!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            )
-          ],
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // Format the selected date and time for display
+            String formattedDate = DateFormat('EEE, MMM d, yyyy').format(selectedDate);
+            String formattedTime = selectedTime.format(context);
+            
+            return AlertDialog(
+              title: Text('Create Assignment'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Assignment name field
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Assignment Name',
+                        hintText: 'Enter a name for this assignment',
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Due date picker
+                    ListTile(
+                      title: Text('Due Date'),
+                      subtitle: Text(formattedDate),
+                      trailing: Icon(Icons.calendar_today),
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(Duration(days: 365)),
+                        );
+                        if (picked != null && picked != selectedDate) {
+                          setState(() {
+                            selectedDate = picked;
+                          });
+                        }
+                      },
+                    ),
+                    
+                    // Due time picker
+                    ListTile(
+                      title: Text('Due Time'),
+                      subtitle: Text(formattedTime),
+                      trailing: Icon(Icons.access_time),
+                      onTap: () async {
+                        final TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime,
+                        );
+                        if (picked != null && picked != selectedTime) {
+                          setState(() {
+                            selectedTime = picked;
+                          });
+                        }
+                      },
+                    ),
+                    
+                    SizedBox(height: 16),
+                    Text('You must create a new quiz for this assignment.', 
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Validate assignment name
+                    if (nameController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        SnackBar(content: Text('Please enter an assignment name'))
+                      );
+                      return;
+                    }
+                    
+                    // Close the dialog
+                    Navigator.of(dialogContext).pop();
+                    
+                    // Navigate directly to quiz creation
+                    final createdQuizPath = await Navigator.pushNamed(
+                      context, 
+                      Constants.quizCreationRoute,
+                      arguments: QuizCreationArgs(
+                        sectionIds: args.sectionIds,
+                        classId: args.sectionIds.isNotEmpty ? args.sectionIds.first : null
+                      ),
+                    );
+                    
+                    // If a quiz was created successfully, continue with assignment creation
+                    if (createdQuizPath != null) {
+                      final dueDate = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        selectedTime.hour,
+                        selectedTime.minute,
+                      );
+                      
+                      // Show section selection dialog
+                      _showSectionSelectionDialog(
+                        nameController.text.trim(),
+                        createdQuizPath.toString(),
+                        dueDate,
+                      );
+                    }
+                  },
+                  child: Text('Create Quiz'),
+                ),
+              ],
+            );
+          },
         );
-      }
+      },
     );
+  }
+
+  // Show dialog to select which sections to assign to
+  Future<void> _showSectionSelectionDialog(String assignmentName, String quizPath, DateTime dueDate) async {
+    // Create a map to track which sections are selected (all selected by default)
+    Map<String, bool> selectedSections = {};
+    
+    for (var section in sections) {
+      selectedSections[section['classId']] = true;
+    }
+    
+    await showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Select Sections'),
+              content: Container(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Assign "$assignmentName" to:'),
+                    SizedBox(height: 16),
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: sections.length,
+                        itemBuilder: (context, index) {
+                          final section = sections[index];
+                          final sectionId = section['classId'] as String;
+                          final sectionName = section['classHour'] ?? 'Section ${index + 1}';
+                          
+                          return CheckboxListTile(
+                            title: Text(sectionName),
+                            subtitle: Text('${section['studentCount'] ?? 0} students'),
+                            value: selectedSections[sectionId] ?? false,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                selectedSections[sectionId] = value ?? false;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(dialogContext).pop();
+                    
+                    // Create the assignment
+                    await _finalizeAssignmentCreation(
+                      assignmentName,
+                      quizPath,
+                      dueDate,
+                      selectedSections,
+                    );
+                  },
+                  child: Text('Create Assignment'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Create the assignment in the selected sections
+  Future<void> _finalizeAssignmentCreation(
+    String assignmentName,
+    String quizPath,
+    DateTime dueDate,
+    Map<String, bool> selectedSections,
+  ) async {
+    // Show loading indicator
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      // Generate a unique assignment ID
+      final assignmentId = 'assignment_${DateTime.now().millisecondsSinceEpoch}_${FirebaseAuth.instance.currentUser?.uid ?? "unknown"}';
+      
+      // Create the assignment object
+      final assignmentData = {
+        'assignmentId': assignmentId,
+        'assignmentName': assignmentName,
+        'quizPath': quizPath,
+        'dueDate': Timestamp.fromDate(dueDate),
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+      
+      // Add the assignment to each selected section
+      for (String sectionId in selectedSections.keys) {
+        if (selectedSections[sectionId] == true) {
+          await FirebaseFirestore.instance
+              .collection('classes')
+              .doc(sectionId)
+              .update({
+                'assignments': FieldValue.arrayUnion([assignmentData])
+              });
+        }
+      }
+      
+      // Reload assignments
+      await _loadAssignments();
+      
+      // Show success message
+      _showSnackBar('Assignment created successfully!');
+    } catch (e) {
+      _showSnackBar('Error creating assignment: $e', backgroundColor: Theme.of(context).colorScheme.error);
+    } finally {
+      // Hide loading indicator
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   // Method to preview quiz - now uses preloaded data

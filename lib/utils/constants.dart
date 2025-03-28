@@ -17,6 +17,7 @@ class Constants {
   static const String classHomeRoute = "/class-home";
   static const String quizRoute = "/quiz";
   static const String quizResultsRoute = "/quiz-results";
+  static const String quizCreationRoute = '/create-quiz';
 
   // External API Routes
   static const String profilePictureRoute =
