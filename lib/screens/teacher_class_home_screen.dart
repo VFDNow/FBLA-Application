@@ -1424,11 +1424,15 @@ class _TeacherClassHomeScreenState extends State<TeacherClassHomeScreen>
                                 icon: Icon(Icons.edit),
                                 label: Text('Manage'),
                                 onPressed: () {
-                                  // Navigate to the regular class page for this specific section
+                                  // Navigate to the section management screen for teachers
                                   Navigator.pushNamed(
-                                      context, Constants.classHomeRoute,
-                                      arguments:
-                                          ClassHomeArgs(section['classId']));
+                                      context, Constants.teacherSectionManageRoute,
+                                      arguments: TeacherSectionManageArgs(
+                                        sectionId: section['classId'],
+                                        sectionName: section['classHour'] ?? 'Unknown Section', 
+                                        className: args.className,
+                                        classIcon: args.classIcon
+                                      ));
                                 },
                               ),
                             ],
