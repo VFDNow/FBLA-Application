@@ -22,7 +22,8 @@ class QuizCreationScreen extends StatefulWidget {
   _QuizCreationScreenState createState() => _QuizCreationScreenState();
 }
 
-class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTickerProviderStateMixin {
+class _QuizCreationScreenState extends State<QuizCreationScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool isLoading = false;
   String? username;
@@ -61,13 +62,14 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)!.settings.arguments as QuizCreationArgs?;
-    
+    final args =
+        ModalRoute.of(context)!.settings.arguments as QuizCreationArgs?;
+
     // Set class ID if provided
     if (args?.classId != null) {
       quizData['classId'] = args!.classId;
     }
-    
+
     // Load existing quiz if editing
     if (args?.existingQuizPath != null) {
       _loadExistingQuiz(args!.existingQuizPath!);
@@ -87,7 +89,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
           .collection('users')
           .doc(user.uid)
           .get();
-      
+
       if (userData.exists) {
         final data = userData.data();
         if (data != null && data.containsKey('name')) {
@@ -108,16 +110,18 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     });
 
     try {
-      final quizRef = FirebaseStorage.instance.ref().child('quizzes/$quizPath.json');
+      final quizRef =
+          FirebaseStorage.instance.ref().child('quizzes/$quizPath.json');
       final quizBytes = await quizRef.getData();
-      
+
       if (quizBytes != null) {
         final quizJson = utf8.decode(quizBytes);
         final loadedQuizData = json.decode(quizJson);
-        
+
         setState(() {
           quizData = loadedQuizData;
-          questions = List<Map<String, dynamic>>.from(quizData['questions'] ?? []);
+          questions =
+              List<Map<String, dynamic>>.from(quizData['questions'] ?? []);
         });
       }
     } catch (e) {
@@ -138,7 +142,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
 
   Map<String, dynamic> _createEmptyQuestion(String questionType) {
     final questionId = questions.length.toString();
-    
+
     // Base question structure
     final Map<String, dynamic> question = {
       'questionId': questionId,
@@ -146,7 +150,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       'questionTitle': '',
       'questionBody': '',
     };
-    
+
     // Add type-specific fields
     switch (questionType) {
       case 'MC':
@@ -156,21 +160,21 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
         ];
         question['correctAnswers'] = [];
         break;
-        
+
       case 'TF':
         question['correctAnswer'] = true;
         break;
-        
+
       case 'SA':
         question['answers'] = [];
         question['singleWord'] = true;
         break;
-        
+
       case 'LA':
         question['criteria'] = '';
         break;
     }
-    
+
     return question;
   }
 
@@ -183,14 +187,14 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       }
     });
   }
-  
+
   void _moveQuestion(int oldIndex, int newIndex) {
     if (newIndex < 0 || newIndex >= questions.length) return;
-    
+
     setState(() {
       final item = questions.removeAt(oldIndex);
       questions.insert(newIndex, item);
-      
+
       // Update questionIds to maintain order
       for (int i = 0; i < questions.length; i++) {
         questions[i]['questionId'] = i.toString();
@@ -201,15 +205,16 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   // Helper method to generate a unique ID without using uuid package
   String _generateUniqueId() {
     final random = Random();
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    
+
     // Generate a random string of 10 characters
     String randomString = '';
     for (int i = 0; i < 10; i++) {
       randomString += chars[random.nextInt(chars.length)];
     }
-    
+
     // Combine timestamp and random string for uniqueness
     return 'quiz_${timestamp}_$randomString';
   }
@@ -219,32 +224,32 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       _showSnackBar('Please fix the errors before saving');
       return;
     }
-    
+
     _formKey.currentState!.save();
-    
+
     setState(() {
       isLoading = true;
     });
-    
+
     try {
       // Update the questions in the quiz data
       quizData['questions'] = questions;
-      
+
       // Generate quiz path if not exists
       final quizPath = quizData['quizPath'] ?? _generateUniqueId();
       quizData['quizPath'] = quizPath;
-      
+
       // Convert to JSON and upload to Firebase Storage
       final quizJson = json.encode(quizData);
       final quizBytes = utf8.encode(quizJson);
-      
+
       await FirebaseStorage.instance
-        .ref()
-        .child('quizzes/$quizPath.json')
-        .putData(Uint8List.fromList(quizBytes));
-      
+          .ref()
+          .child('quizzes/$quizPath.json')
+          .putData(Uint8List.fromList(quizBytes));
+
       _showSnackBar('Quiz saved successfully!');
-      
+
       // Check if widget is still mounted before using context
       if (mounted) {
         Navigator.pop(context, quizPath);
@@ -259,9 +264,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message))
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   // Updated helper method to determine if AI grading is being used, based on answers
@@ -269,15 +273,14 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     // For long answer questions, always use AI grading
     if (question['questionType'] == 'LA') {
       return true;
-    } 
+    }
     // Short answer questions ALWAYS use AI grading now
     else if (question['questionType'] == 'SA') {
       return true;
-    }
-    else if (question['questionType'] == 'MC') {
-      return question['correctAnswers'] == null || question['correctAnswers'].isEmpty;
-    } 
-    else if (question['questionType'] == 'TF') {
+    } else if (question['questionType'] == 'MC') {
+      return question['correctAnswers'] == null ||
+          question['correctAnswers'].isEmpty;
+    } else if (question['questionType'] == 'TF') {
       return question['correctAnswer'] == null;
     }
     return false;
@@ -288,7 +291,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     bool isLongAnswer = question['questionType'] == 'LA';
     bool isShortAnswer = question['questionType'] == 'SA';
     bool useAIGrading = _isUsingAIGrading(question);
-    
+
     String chipLabel;
     if (isLongAnswer) {
       chipLabel = 'Always AI Graded';
@@ -299,7 +302,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     } else {
       chipLabel = 'Has Manual Answers';
     }
-    
+
     return Chip(
       avatar: Icon(
         Icons.auto_awesome,
@@ -324,7 +327,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   Widget _buildShortAnswerFields(Map<String, dynamic> question) {
     List<dynamic> answers = question['answers'] ?? [];
     bool singleWord = question['singleWord'] ?? true;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -340,7 +343,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             _buildAIGradingChip(question),
           ],
         ),
-        
+
         // Single Word chip on its own row
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -367,7 +370,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             },
           ),
         ),
-        
+
         // AI Grading info message - always shown for short answer
         Container(
           margin: EdgeInsets.only(bottom: 16),
@@ -400,22 +403,26 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ],
           ),
         ),
-        
+
         SizedBox(height: 8),
         Divider(),
-        Text('Example Answers (optional):', style: TextStyle(fontWeight: FontWeight.w500)),
+        Text('Example Answers (optional):',
+            style: TextStyle(fontWeight: FontWeight.w500)),
         SizedBox(height: 4),
         Text(
           'Providing examples helps fine-tune AI grading',
-          style: TextStyle(fontSize: 12, color: Colors.grey[700], fontStyle: FontStyle.italic),
+          style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+              fontStyle: FontStyle.italic),
         ),
         SizedBox(height: 8),
-        
+
         // List of acceptable answers - now labeled as examples
         ...answers.asMap().entries.map((entry) {
           final answerIndex = entry.key;
           final answerText = entry.value;
-          
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Row(
@@ -435,7 +442,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     },
                   ),
                 ),
-                
+
                 // Delete answer button
                 IconButton(
                   icon: Icon(Icons.remove_circle_outline),
@@ -450,7 +457,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ),
           );
         }).toList(),
-        
+
         // Add answer button on its own row
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
@@ -468,7 +475,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       ],
     );
   }
-  
+
   // Update Long Answer fields to use consistent FilterChip style for AI grading
   Widget _buildLongAnswerFields(Map<String, dynamic> question) {
     return Column(
@@ -502,9 +509,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ),
           ],
         ),
-        
+
         Divider(),
-        
+
         // Grading criteria - optional but helpful for AI
         TextFormField(
           initialValue: question['criteria'] ?? '',
@@ -521,9 +528,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             });
           },
         ),
-        
+
         SizedBox(height: 16),
-        
+
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -561,24 +568,25 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   // Update answer preview to reflect automatic AI grading for SA and LA
   Widget _buildAnswerPreview(Map<String, dynamic> question) {
     final questionType = question['questionType'];
-    
+
     // Show normal answer preview always
     switch (questionType) {
       case 'MC':
         List<dynamic> answers = question['answers'] ?? [];
         List<dynamic> correctAnswers = question['correctAnswers'] ?? [];
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Answer Choices:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Answer Choices:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             ...answers.asMap().entries.map((entry) {
               final answerIndex = entry.key;
               final answer = entry.value;
               final isCorrect = correctAnswers.contains(answer['answerId']);
               final hasIcon = answer['answerIcon'] != null;
-              
+
               return Container(
                 margin: EdgeInsets.only(bottom: 8),
                 padding: EdgeInsets.all(8),
@@ -602,9 +610,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                         ),
                         color: isCorrect ? Colors.green : Colors.transparent,
                       ),
-                      child: isCorrect 
-                        ? Icon(Icons.check, size: 16, color: Colors.white) 
-                        : null,
+                      child: isCorrect
+                          ? Icon(Icons.check, size: 16, color: Colors.white)
+                          : null,
                     ),
                     SizedBox(width: 8),
                     // Show icon if available
@@ -622,7 +630,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                             ? answer['answerBody']
                             : 'Option ${String.fromCharCode(65 + answerIndex)} (empty)',
                         style: TextStyle(
-                          fontWeight: isCorrect ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isCorrect ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -630,9 +639,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 ),
               );
             }).toList(),
-            
+
             // If AI grading is enabled, show a note
-            if (_isUsingAIGrading(question)) 
+            if (_isUsingAIGrading(question))
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Container(
@@ -646,8 +655,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                       Icon(Icons.auto_awesome, size: 16, color: Colors.purple),
                       SizedBox(width: 6),
                       Expanded(
-                        child: Text('AI will evaluate responses based on context and meaning', 
-                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.purple[700])),
+                        child: Text(
+                            'AI will evaluate responses based on context and meaning',
+                            style: TextStyle(color: Colors.purple[700])),
                       ),
                     ],
                   ),
@@ -655,38 +665,45 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
               ),
           ],
         );
-        
+
       case 'TF':
-        final correctAnswer = question['correctAnswer'] ?? true;
-        
+        final bool? correctAnswer = question['correctAnswer'];
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Correct Answer:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(correctAnswer == null ? 'Choices:' : 'Correct Answer:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             Row(
               children: [
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: correctAnswer ? Colors.green[100] : null,
+                    color: correctAnswer != null && correctAnswer
+                        ? Colors.green[100]
+                        : null,
                     border: Border.all(
-                      color: correctAnswer ? Colors.green : Colors.grey,
-                      width: correctAnswer ? 2 : 1,
+                      color: correctAnswer != null && correctAnswer
+                          ? Colors.green
+                          : Colors.grey,
+                      width: correctAnswer != null && correctAnswer ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      correctAnswer 
-                        ? Icon(Icons.check_circle, color: Colors.green) 
-                        : Icon(Icons.circle_outlined, color: Colors.grey),
+                      correctAnswer != null && correctAnswer
+                          ? Icon(Icons.check_circle, color: Colors.green)
+                          : Icon(Icons.circle_outlined, color: Colors.grey),
                       SizedBox(width: 8),
                       Text(
                         'True',
                         style: TextStyle(
-                          fontWeight: correctAnswer ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: correctAnswer != null && correctAnswer
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -696,24 +713,30 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: !correctAnswer ? Colors.green[100] : null,
+                    color: correctAnswer != null && !correctAnswer
+                        ? Colors.green[100]
+                        : null,
                     border: Border.all(
-                      color: !correctAnswer ? Colors.green : Colors.grey,
-                      width: !correctAnswer ? 2 : 1,
+                      color: correctAnswer != null && !correctAnswer
+                          ? Colors.green
+                          : Colors.grey,
+                      width: correctAnswer != null && !correctAnswer ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      !correctAnswer 
-                        ? Icon(Icons.check_circle, color: Colors.green) 
-                        : Icon(Icons.circle_outlined, color: Colors.grey),
+                      correctAnswer != null && !correctAnswer
+                          ? Icon(Icons.check_circle, color: Colors.green)
+                          : Icon(Icons.circle_outlined, color: Colors.grey),
                       SizedBox(width: 8),
                       Text(
                         'False',
                         style: TextStyle(
-                          fontWeight: !correctAnswer ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: correctAnswer != null && !correctAnswer
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -721,18 +744,42 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 ),
               ],
             ),
+            // If AI grading is enabled, show a note
+            if (_isUsingAIGrading(question))
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: Colors.purple.withOpacity(0.1),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.auto_awesome, size: 16, color: Colors.purple),
+                      SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                            'AI will evaluate responses based on context and meaning',
+                            style: TextStyle(color: Colors.purple[700])),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         );
-        
+
       case 'SA':
         final answers = question['answers'] ?? [];
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('AI Graded Question:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('AI Graded Question:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            
+
             // Always show AI grading message
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -747,50 +794,51 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      answers.isEmpty 
-                      ? 'AI will automatically grade responses based on semantics' 
-                      : 'AI will evaluate responses using examples as a guide',
-                      style: TextStyle(color: Colors.purple[700])
-                    ),
+                        answers.isEmpty
+                            ? 'AI will automatically grade responses based on semantics'
+                            : 'AI will evaluate responses using examples as a guide',
+                        style: TextStyle(color: Colors.purple[700])),
                   ),
                 ],
               ),
             ),
-            
+
             // Show example answers if provided
             if (answers.isNotEmpty) ...[
               SizedBox(height: 12),
-              Text('Example Answers:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Example Answers:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              ...answers.map((answer) => 
-                Container(
-                  margin: EdgeInsets.only(bottom: 4),
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green[100],
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.green),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.lightbulb, color: Colors.green),
-                      SizedBox(width: 8),
-                      Expanded(child: Text(answer.toString())),
-                    ],
-                  ),
-                )
-              ).toList(),
+              ...answers
+                  .map((answer) => Container(
+                        margin: EdgeInsets.only(bottom: 4),
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green[100],
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.green),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.lightbulb, color: Colors.green),
+                            SizedBox(width: 8),
+                            Expanded(child: Text(answer.toString())),
+                          ],
+                        ),
+                      ))
+                  .toList(),
             ],
           ],
         );
-        
+
       case 'LA':
         final criteria = question['criteria'] ?? '';
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('AI Graded Question:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('AI Graded Question:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -805,7 +853,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 children: [
                   // Only show criteria section if there's actual content
                   if (criteria.isNotEmpty) ...[
-                    Text('Grading Criteria:', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text('Grading Criteria:',
+                        style: TextStyle(fontWeight: FontWeight.w500)),
                     SizedBox(height: 8),
                     Container(
                       padding: EdgeInsets.all(12),
@@ -824,11 +873,10 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                       SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          criteria.isEmpty 
-                          ? 'AI will automatically grade responses based on semantics' 
-                          : 'AI will grade based on these criteria',
+                          criteria.isEmpty
+                              ? 'AI will automatically grade responses based on semantics'
+                              : 'AI will grade based on these criteria',
                           style: TextStyle(
-                            fontStyle: FontStyle.italic,
                             color: Colors.purple,
                           ),
                         ),
@@ -840,7 +888,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ),
           ],
         );
-      
+
       default:
         return Text('Unknown question type');
     }
@@ -851,7 +899,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     List<dynamic> answers = question['answers'] ?? [];
     List<dynamic> correctAnswers = question['correctAnswers'] ?? [];
     bool useAIGrading = _isUsingAIGrading(question);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -866,15 +914,15 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             _buildAIGradingChip(question),
           ],
         ),
-        
+
         SizedBox(height: 8),
-        
+
         // List of answer choices
         ...answers.asMap().entries.map((entry) {
           final answerIndex = entry.key;
           final answer = entry.value;
           final isCorrect = correctAnswers.contains(answer['answerId']);
-          
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Row(
@@ -895,13 +943,14 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     });
                   },
                 ),
-                
+
                 // Answer text field
                 Expanded(
                   child: TextFormField(
                     initialValue: answer['answerBody'],
                     decoration: InputDecoration(
-                      labelText: 'Option ${String.fromCharCode(65 + answerIndex)}',
+                      labelText:
+                          'Option ${String.fromCharCode(65 + answerIndex)}',
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -911,7 +960,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     },
                   ),
                 ),
-                
+
                 // Replace dropdown with icon selection button
                 SizedBox(width: 8),
                 InkWell(
@@ -927,12 +976,17 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     ),
                     child: Center(
                       child: answer['answerIcon'] != null
-                          ? Icon(Constants.questionIconStringMap[answer['answerIcon']], size: 24)
-                          : Text('Icon', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          ? Icon(
+                              Constants
+                                  .questionIconStringMap[answer['answerIcon']],
+                              size: 24)
+                          : Text('Icon',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade600)),
                     ),
                   ),
                 ),
-                
+
                 // Delete answer button
                 IconButton(
                   icon: Icon(Icons.remove_circle_outline),
@@ -950,7 +1004,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             ),
           );
         }).toList(),
-        
+
         // Add answer button
         TextButton.icon(
           icon: Icon(Icons.add_circle_outline),
@@ -970,7 +1024,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
       ],
     );
   }
-  
+
   // Add a new method to show the icon selection dialog
   void _showIconSelectionDialog(Map<String, dynamic> answer) {
     showDialog(
@@ -988,7 +1042,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 crossAxisSpacing: 8,
                 childAspectRatio: 1,
               ),
-              itemCount: Constants.questionIconStringMap.length + 1, // +1 for "No icon" option
+              itemCount: Constants.questionIconStringMap.length +
+                  1, // +1 for "No icon" option
               itemBuilder: (context, index) {
                 if (index == 0) {
                   // "No icon" option
@@ -1014,11 +1069,12 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     ),
                   );
                 }
-                
+
                 final iconIndex = index - 1; // Adjust for the "No icon" option
-                final iconName = Constants.questionIconStringMap.keys.elementAt(iconIndex);
+                final iconName =
+                    Constants.questionIconStringMap.keys.elementAt(iconIndex);
                 final iconData = Constants.questionIconStringMap[iconName];
-                
+
                 return InkWell(
                   onTap: () {
                     setState(() {
@@ -1030,7 +1086,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(8),
-                      color: answer['answerIcon'] == iconName ? Colors.blue.shade100 : null,
+                      color: answer['answerIcon'] == iconName
+                          ? Colors.blue.shade100
+                          : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1078,9 +1136,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             _buildAIGradingChip(question),
           ],
         ),
-        
+
         SizedBox(height: 8),
-        
+
         // True/False radio buttons
         RadioListTile<bool>(
           title: Text('True'),
@@ -1092,7 +1150,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             });
           },
         ),
-        
+
         RadioListTile<bool>(
           title: Text('False'),
           value: false,
@@ -1103,7 +1161,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             });
           },
         ),
-        
+
         // Clear answer button to enable AI grading
         TextButton.icon(
           icon: Icon(Icons.auto_awesome),
@@ -1122,7 +1180,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     final questionType = question['questionType'];
     final questionNumber = question['displayNumber'];
     final bool useAIGrading = _isUsingAIGrading(question);
-    
+
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -1150,13 +1208,13 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    question['questionTitle'].isNotEmpty 
-                        ? question['questionTitle'] 
+                    question['questionTitle'].isNotEmpty
+                        ? question['questionTitle']
                         : 'Untitled Question',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                
+
                 // Show AI badge if applicable
                 if (useAIGrading)
                   Container(
@@ -1169,7 +1227,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.auto_awesome, size: 16, color: Colors.purple),
+                        Icon(Icons.auto_awesome,
+                            size: 16, color: Colors.purple),
                         SizedBox(width: 4),
                         Text(
                           'AI Graded',
@@ -1184,18 +1243,18 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                   ),
               ],
             ),
-            
+
             SizedBox(height: 12),
-            
+
             // Question body
             Text(
-              question['questionBody'].isNotEmpty 
-                  ? question['questionBody'] 
+              question['questionBody'].isNotEmpty
+                  ? question['questionBody']
                   : 'No question text',
             ),
-            
+
             Divider(),
-            
+
             // Answer preview based on question type
             _buildAnswerPreview(question),
           ],
@@ -1208,8 +1267,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(quizData['quizName'].isNotEmpty 
-            ? 'Edit: ${quizData['quizName']}' 
+        title: Text(quizData['quizName'].isNotEmpty
+            ? 'Edit: ${quizData['quizName']}'
             : 'Create New Quiz'),
         actions: [
           IconButton(
@@ -1226,15 +1285,15 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
           ],
         ),
       ),
-      body: isLoading 
-        ? Center(child: CircularProgressIndicator())
-        : TabBarView(
-            controller: _tabController,
-            children: [
-              _buildEditTab(),
-              _buildPreviewTab(),
-            ],
-          ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildEditTab(),
+                _buildPreviewTab(),
+              ],
+            ),
     );
   }
 
@@ -1249,9 +1308,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             children: [
               // Quiz metadata
               _buildQuizMetadata(),
-              
+
               SizedBox(height: 24),
-              
+
               // Questions list
               _buildQuestionsSection(),
             ],
@@ -1274,7 +1333,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 16),
-            
+
             // Quiz name - add onChanged to update quizData immediately
             TextFormField(
               initialValue: quizData['quizName'],
@@ -1297,9 +1356,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 });
               },
             ),
-            
+
             SizedBox(height: 16),
-            
+
             // Quiz description - add onChanged to update quizData immediately
             TextFormField(
               initialValue: quizData['quizDesc'],
@@ -1318,9 +1377,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 });
               },
             ),
-            
+
             SizedBox(height: 16),
-            
+
             // Quiz settings - stacked vertically
             SwitchListTile(
               title: Text('Shuffle Questions'),
@@ -1332,10 +1391,11 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 });
               },
             ),
-            
+
             SwitchListTile(
               title: Text('Allow Question Navigation'),
-              subtitle: Text('Students can move back and forth between questions'),
+              subtitle:
+                  Text('Students can move back and forth between questions'),
               value: quizData['allowTraversal'] ?? true,
               onChanged: (value) {
                 setState(() {
@@ -1363,9 +1423,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
             _buildAddQuestionButton(),
           ],
         ),
-        
+
         SizedBox(height: 16),
-        
+
         // Questions list
         questions.isEmpty
             ? Center(
@@ -1390,7 +1450,8 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                 },
                 itemBuilder: (context, index) {
                   final question = questions[index];
-                  return _buildQuestionCard(question, index, key: ValueKey(question['questionId']));
+                  return _buildQuestionCard(question, index,
+                      key: ValueKey(question['questionId']));
                 },
               ),
       ],
@@ -1441,25 +1502,35 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     );
   }
 
-  Widget _buildQuestionCard(Map<String, dynamic> question, int index, {required Key key}) {
+  Widget _buildQuestionCard(Map<String, dynamic> question, int index,
+      {required Key key}) {
     final questionType = question['questionType'];
     String questionTypeText = '';
-    
+
     switch (questionType) {
-      case 'MC': questionTypeText = 'Multiple Choice'; break;
-      case 'TF': questionTypeText = 'True/False'; break;
-      case 'SA': questionTypeText = 'Short Answer'; break;
-      case 'LA': questionTypeText = 'Long Answer'; break;
-      default: questionTypeText = 'Unknown Type';
+      case 'MC':
+        questionTypeText = 'Multiple Choice';
+        break;
+      case 'TF':
+        questionTypeText = 'True/False';
+        break;
+      case 'SA':
+        questionTypeText = 'Short Answer';
+        break;
+      case 'LA':
+        questionTypeText = 'Long Answer';
+        break;
+      default:
+        questionTypeText = 'Unknown Type';
     }
-    
+
     return Card(
       key: key,
       margin: EdgeInsets.only(bottom: 16),
       elevation: 2,
       child: ExpansionTile(
-        title: Text(question['questionTitle'].isNotEmpty 
-            ? 'Q${index + 1}: ${question['questionTitle']}' 
+        title: Text(question['questionTitle'].isNotEmpty
+            ? 'Q${index + 1}: ${question['questionTitle']}'
             : 'Question ${index + 1}'),
         subtitle: Text(questionTypeText),
         leading: Icon(Icons.drag_handle),
@@ -1498,9 +1569,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     });
                   },
                 ),
-                
+
                 SizedBox(height: 16),
-                
+
                 // Question body
                 TextFormField(
                   initialValue: question['questionBody'],
@@ -1522,9 +1593,9 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
                     });
                   },
                 ),
-                
+
                 SizedBox(height: 16),
-                
+
                 // Question type specific fields
                 _buildQuestionTypeFields(question, index),
               ],
@@ -1537,7 +1608,7 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
 
   Widget _buildQuestionTypeFields(Map<String, dynamic> question, int index) {
     final questionType = question['questionType'];
-    
+
     switch (questionType) {
       case 'MC':
         return _buildMultipleChoiceFields(question, index);
@@ -1557,99 +1628,104 @@ class _QuizCreationScreenState extends State<QuizCreationScreen> with SingleTick
     final formattedQuestions = questions.asMap().entries.map((entry) {
       final index = entry.key;
       final question = Map<String, dynamic>.from(entry.value);
-      
+
       // Add question number for display
       question['displayNumber'] = index + 1;
-      
+
       return question;
     }).toList();
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Quiz title and description - using the form values
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    quizData['quizName'].isEmpty ? 'Untitled Quiz' : quizData['quizName'],
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    quizData['quizDesc'].isEmpty ? 'No description provided' : quizData['quizDesc'],
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  SizedBox(height: 16),
-                  
-                  // Quiz settings
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+          Row(
+            children: [
+              Expanded(
+                  child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Chip(
-                        avatar: Icon(
-                          quizData['shuffleOrder'] == true 
-                            ? Icons.shuffle 
-                            : Icons.format_list_numbered,
-                          size: 18,
-                        ),
-                        label: Text(
-                          quizData['shuffleOrder'] == true 
-                            ? 'Shuffled Questions' 
-                            : 'Fixed Order'
-                        ),
+                      Text(
+                        quizData['quizName'].isEmpty
+                            ? 'Untitled Quiz'
+                            : quizData['quizName'],
+                        style: Theme.of(context).textTheme.headlineMedium,
                       ),
-                      Chip(
-                        avatar: Icon(
-                          quizData['allowTraversal'] == true 
-                            ? Icons.swap_horiz 
-                            : Icons.arrow_forward,
-                          size: 18,
-                        ),
-                        label: Text(
-                          quizData['allowTraversal'] == true 
-                            ? 'Navigation Allowed' 
-                            : 'One Direction'
-                        ),
+                      SizedBox(height: 8),
+                      Text(
+                        quizData['quizDesc'].isEmpty
+                            ? 'No description provided'
+                            : quizData['quizDesc'],
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      SizedBox(height: 16),
+
+                      // Quiz settings
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          Chip(
+                            avatar: Icon(
+                              quizData['shuffleOrder'] == true
+                                  ? Icons.shuffle
+                                  : Icons.format_list_numbered,
+                              size: 18,
+                            ),
+                            label: Text(quizData['shuffleOrder'] == true
+                                ? 'Shuffled Questions'
+                                : 'Fixed Order'),
+                          ),
+                          Chip(
+                            avatar: Icon(
+                              quizData['allowTraversal'] == true
+                                  ? Icons.swap_horiz
+                                  : Icons.arrow_forward,
+                              size: 18,
+                            ),
+                            label: Text(quizData['allowTraversal'] == true
+                                ? 'Navigation Allowed'
+                                : 'One Direction'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              ))
+            ],
           ),
-          
+
           SizedBox(height: 24),
-          
+
           // Questions preview
           Text(
             'Questions',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          
+
           SizedBox(height: 16),
-          
+
           formattedQuestions.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Text(
-                    'No questions added yet',
-                    style: TextStyle(fontStyle: FontStyle.italic),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Text(
+                      'No questions added yet',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
                   ),
+                )
+              : Column(
+                  children: formattedQuestions
+                      .map((question) => _buildQuestionPreview(question))
+                      .toList(),
                 ),
-              )
-            : Column(
-                children: formattedQuestions.map((question) => 
-                  _buildQuestionPreview(question)
-                ).toList(),
-              ),
         ],
       ),
     );
