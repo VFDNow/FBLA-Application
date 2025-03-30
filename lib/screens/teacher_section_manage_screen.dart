@@ -36,6 +36,9 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
   List<Map<String, dynamic>> students = [];
   Map<String, Map<String, dynamic>> groups = {};
   Map<String, Map<String, dynamic>> studentPerformance = {};
+  
+  // Add a field to store section assignments for lookup
+  List<Map<String, dynamic>> assignments = [];
 
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> filteredStudents = [];
@@ -100,6 +103,16 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
 
       if (sectionDoc.exists) {
         Map<String, dynamic> data = sectionDoc.data() as Map<String, dynamic>;
+
+        // Load assignments from the section document
+        List<dynamic> assignmentList = data['assignments'] ?? [];
+        List<Map<String, dynamic>> loadedAssignments = [];
+        
+        for (var assignment in assignmentList) {
+          if (assignment is Map<String, dynamic>) {
+            loadedAssignments.add(assignment);
+          }
+        }
 
         List<dynamic> studentsList = data['students'] ?? [];
         List<Map<String, dynamic>> loadedStudents = [];
@@ -177,6 +190,8 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
         );
 
         setState(() {
+          // Store assignments for later use
+          assignments = loadedAssignments;
           students = loadedStudents;
           filteredStudents = List.from(loadedStudents);
           groups = loadedGroups;
@@ -201,6 +216,20 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
         });
       }
     }
+  }
+
+  // Helper method to get assignment details
+  Map<String, dynamic>? _getAssignmentDetails(String assignmentId) {
+    return assignments.firstWhere(
+      (assignment) => assignment['assignmentId'] == assignmentId,
+      orElse: () => {},
+    );
+  }
+
+  // Helper method to check if submission is late
+  bool _isSubmissionLate(Timestamp submissionTime, Timestamp? dueDate) {
+    if (dueDate == null) return false;
+    return submissionTime.compareTo(dueDate) > 0;
   }
 
   Future<void> _loadStudentPerformanceData() async {
@@ -697,12 +726,39 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
                           DateTime quizDate = (quiz['timestamp'] as Timestamp).toDate();
                           String dateStr = '${quizDate.month}/${quizDate.day}/${quizDate.year}';
                           double score = quiz['score'] as double;
+                          String assignmentId = quiz['assignmentId'] ?? '';
+                          
+                          // Get assignment details to check if submission is late
+                          Map<String, dynamic>? assignment = _getAssignmentDetails(assignmentId);
+                          String quizName = assignment?['assignmentName'] ?? 'Unnamed Quiz';
+                          
+                          // Check if submission was late
+                          bool isLate = false;
+                          if (assignment != null && assignment.isNotEmpty && assignment['dueDate'] != null) {
+                            isLate = _isSubmissionLate(
+                              quiz['timestamp'] as Timestamp, 
+                              assignment['dueDate'] as Timestamp
+                            );
+                          }
                           
                           return ListTile(
                             leading: Icon(Icons.quiz, 
                                 color: _getScoreColor(score / 100)),
-                            title: Text('Quiz on $dateStr'),
-                            subtitle: Text('Score: ${score.toStringAsFixed(1)}%'),
+                            title: Text(quizName),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Score: ${score.toStringAsFixed(1)}%'),
+                                Text(
+                                  'Submitted: $dateStr${isLate ? " (Late)" : ""}',
+                                  style: TextStyle(
+                                    color: isLate ? Colors.red : null,
+                                    fontWeight: isLate ? FontWeight.bold : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            isThreeLine: true,
                           );
                         }).toList(),
                         
@@ -945,7 +1001,7 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
           ListTile(
             leading: Icon(Icons.group, size: 36, color: Theme.of(context).primaryColor),
             title: Text(groupName, style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${members.length} members • $score points'),
+            subtitle: Text('${members.length} members • $score stars'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
