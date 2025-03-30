@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbla_application/screens/class_home_screen.dart';
+import 'package:fbla_application/screens/teacher_section_manage_screen.dart'; // Add this import
 import 'package:fbla_application/utils/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';

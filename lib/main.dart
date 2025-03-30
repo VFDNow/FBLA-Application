@@ -2,7 +2,7 @@ import 'package:fbla_application/api/firebase_auth_config.dart';
 import 'package:fbla_application/screens/class_home_screen.dart';
 import 'package:fbla_application/screens/create_class.dart';
 import 'package:fbla_application/screens/first_time_sign_in.dart';
-import 'package:fbla_application/screens/quiz_creation_screen.dart'; // Add this import
+import 'package:fbla_application/screens/quiz_creation_screen.dart';
 import 'package:fbla_application/screens/teacher_home_screen.dart';
 import 'package:fbla_application/screens/home_screen.dart';
 import 'package:fbla_application/screens/join_class.dart';
@@ -20,6 +20,7 @@ import 'firebase_options.dart';
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
 import 'package:fbla_application/screens/teacher_class_home_screen.dart';
+import 'package:fbla_application/screens/teacher_section_manage_screen.dart';
 
 void main() async {
   // Ensure firebase initialized before booting app
@@ -51,6 +52,16 @@ class FBLAApp extends StatelessWidget {
       darkTheme: AppTheme().darkTheme,
       themeMode: ThemeMode.light,
       navigatorKey: GlobalWidgets.navigatorKey,
+      onGenerateRoute: (settings) {
+        // Handle routes that need arguments
+        if (settings.name == Constants.teacherSectionManageRoute) {
+          return MaterialPageRoute(
+            builder: (context) => TeacherSectionManageScreen(),
+            settings: settings,
+          );
+        }
+        return null;
+      },
     );
   }
 
@@ -68,7 +79,7 @@ class FBLAApp extends StatelessWidget {
       Constants.quizResultsRoute: (context) => QuizResultsScreen(),
       Constants.teacherHomeRoute: (context) => TeacherHomeScreen(),
       Constants.teacherClassHomeRoute: (context) => TeacherClassHomeScreen(),
-      Constants.quizCreationRoute: (context) => const QuizCreationScreen(), // Add this route
+      Constants.quizCreationRoute: (context) => const QuizCreationScreen(), 
     };
   }
 }
