@@ -13,6 +13,7 @@ import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/utils/global_widgets.dart';
 import 'package:fbla_application/utils/theme.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_results_screen.dart';
+import 'package:fbla_application/widgets/themed_status_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -68,18 +69,18 @@ class FBLAApp extends StatelessWidget {
   Map<String, WidgetBuilder> _buildAppRoutes() {
     return {
       Constants.signInRoute: (context) =>
-          AuthScreens.buildSignInScreen(context),
-      Constants.homeRoute: (context) => const Home(),
-      Constants.profileRoute: (context) => ProfileScreen(),
-      Constants.firstTimeSignInRoute: (context) => FirstTimeSignIn(),
-      Constants.createClassRoute: (context) => CreateClassScreen(),
-      Constants.joinClassRoute: (context) => JoinClassScreen(),
-      Constants.classHomeRoute: (context) => ClassHome(),
-      Constants.quizRoute: (context) => QuizScreen(),
-      Constants.quizResultsRoute: (context) => QuizResultsScreen(),
-      Constants.teacherHomeRoute: (context) => TeacherHomeScreen(),
-      Constants.teacherClassHomeRoute: (context) => TeacherClassHomeScreen(),
-      Constants.quizCreationRoute: (context) => const QuizCreationScreen(), 
+          ThemedStatusBar(child: AuthScreens.buildSignInScreen(context)),
+      Constants.homeRoute: (context) => const ThemedStatusBar(child: Home()),
+      Constants.profileRoute: (context) => ThemedStatusBar(child: ProfileScreen()),
+      Constants.firstTimeSignInRoute: (context) => ThemedStatusBar(child: FirstTimeSignIn()),
+      Constants.createClassRoute: (context) => ThemedStatusBar(child: CreateClassScreen()),
+      Constants.joinClassRoute: (context) => ThemedStatusBar(child: JoinClassScreen()),
+      Constants.classHomeRoute: (context) => ThemedStatusBar(child: ClassHome()),
+      Constants.quizRoute: (context) => ThemedStatusBar(child: QuizScreen()),
+      Constants.quizResultsRoute: (context) => ThemedStatusBar(child: QuizResultsScreen()),
+      Constants.teacherHomeRoute: (context) => ThemedStatusBar(child: TeacherHomeScreen()),
+      Constants.teacherClassHomeRoute: (context) => ThemedStatusBar(child: TeacherClassHomeScreen()),
+      Constants.quizCreationRoute: (context) => const ThemedStatusBar(child: QuizCreationScreen()), 
     };
   }
 }
