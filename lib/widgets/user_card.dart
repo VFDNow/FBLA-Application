@@ -10,6 +10,7 @@ class UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      clipBehavior: Clip.hardEdge,
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16.0),

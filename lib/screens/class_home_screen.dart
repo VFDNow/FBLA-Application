@@ -342,107 +342,110 @@ class _ClassHomeState extends State<ClassHome> {
                       ],
                     )),
                   )
-                : Container(
-                    // padding: const EdgeInsets.all(16),
-                    width: double.infinity,
-                    height: 250,
-                    color: Theme.of(context).colorScheme.secondary,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Constants.groupNameIconStringMap[userGroup] ??
-                                      Icons.error,
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  size: 150,
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Share.share(
-                                            "Team $userGroup is on a mission to reach the top of the leaderboard in ${classData?["className"] ?? "class"}! Join us in completing our assignments and earning points. Together we can win this! 💪🔥 #TeamSuccess #${userGroup.replaceAll(" ", "")}")
-                                        .then((result) {
-                                      if (result.status ==
-                                              ShareResultStatus.success &&
-                                          context.mounted) {
-                                        GlobalWidgets(context).showSnackBar(
-                                            content: "Rally Sent!",
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .primary);
-                                      }
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
+                : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                      // padding: const EdgeInsets.all(16),
+                      width: double.infinity,
+                      height: 250,
+                      color: Theme.of(context).colorScheme.secondary,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Constants.groupNameIconStringMap[userGroup] ??
+                                        Icons.error,
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                    size: 150,
                                   ),
-                                  child: SizedBox(
-                                    width:
-                                        100, // Set a fixed width for the button content
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.share),
-                                        Expanded(
-                                          child: Center(
-                                            child: Text("Rally Group"),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Share.share(
+                                              "Team $userGroup is on a mission to reach the top of the leaderboard in ${classData?["className"] ?? "class"}! Join us in completing our assignments and earning points. Together we can win this! 💪🔥 #TeamSuccess #${userGroup.replaceAll(" ", "")}")
+                                          .then((result) {
+                                        if (result.status ==
+                                                ShareResultStatus.success &&
+                                            context.mounted) {
+                                          GlobalWidgets(context).showSnackBar(
+                                              content: "Rally Sent!",
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary);
+                                        }
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                    ),
+                                    child: SizedBox(
+                                      width:
+                                          100, // Set a fixed width for the button content
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.share),
+                                          Expanded(
+                                            child: Center(
+                                              child: Text("Rally Group", textAlign: TextAlign.center,),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    userGroup,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineLarge
+                                        ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimary),
+                                  ),
+                                  SizedBox(
+                                    // height: 150,
+                                    width: 250,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          groups[userGroup]?["members"].length ??
+                                              0,
+                                      itemBuilder: (context, index) {
+                                        return UserCard(
+                                            name: groups[userGroup]?["members"]
+                                                    [index]["name"] ??
+                                                "Unknown",
+                                            icon: groups[userGroup]?["members"]
+                                                    [index]["icon"] ??
+                                                "default");
+                                      },
                                     ),
                                   ),
-                                )
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  userGroup,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineLarge
-                                      ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onPrimary),
-                                ),
-                                SizedBox(
-                                  // height: 150,
-                                  width: 250,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount:
-                                        groups[userGroup]?["members"].length ??
-                                            0,
-                                    itemBuilder: (context, index) {
-                                      return UserCard(
-                                          name: groups[userGroup]?["members"]
-                                                  [index]["name"] ??
-                                              "Unknown",
-                                          icon: groups[userGroup]?["members"]
-                                                  [index]["icon"] ??
-                                              "default");
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                ),
             SizedBox(
                 height: 400,
                 width: double.infinity,

@@ -105,7 +105,11 @@ class _HomeState extends State<Home> {
                                   (userData?["userType"] ?? "Student") ==
                                           "Student"
                                       ? Constants.joinClassRoute
-                                      : Constants.createClassRoute);
+                                      : Constants.createClassRoute).then((value) {
+                                        setState(() {
+                                          userData = null; // Reset user data to force reload
+                                        });
+                                      });
                             }),
                             ...classCards,
                           ],
@@ -134,7 +138,11 @@ class _HomeState extends State<Home> {
             teacherName: classData["teacherName"] ?? "Teacher",
             onTap: () {
               Navigator.pushNamed(context, Constants.classHomeRoute,
-                  arguments: ClassHomeArgs(classData["classId"] ?? ""));
+                  arguments: ClassHomeArgs(classData["classId"] ?? "")).then((value) {
+                    setState(() {
+                      this.userData = null; // Reset user data to force reload
+                    });
+                  });
             }));
       }
     }

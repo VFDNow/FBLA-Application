@@ -199,7 +199,11 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       title: const Text('Create Class'),
       leading: const Icon(Icons.add),
       onTap: () {
-        Navigator.pushNamed(context, Constants.createClassRoute);
+        Navigator.pushNamed(context, Constants.createClassRoute).then((value) {
+          setState(() {
+            userData = null; // Reset user data to force reload
+          });
+        });
       },
     ));
 
@@ -232,7 +236,11 @@ class _NavigationDrawerState extends State<NavigationDrawer> {
       title: const Text('Join Class'),
       leading: const Icon(Icons.add),
       onTap: () {
-        Navigator.pushNamed(context, Constants.joinClassRoute);
+        Navigator.pushNamed(context, Constants.joinClassRoute).then((value) {
+          setState(() {
+            userData = null; // Reset user data to force reload
+          });
+        });
       },
     ));
 

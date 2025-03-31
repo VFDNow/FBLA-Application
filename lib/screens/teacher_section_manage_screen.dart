@@ -317,6 +317,7 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
 
   Future<void> _createNewGroup() async {
     TextEditingController nameController = TextEditingController();
+    // String? groupName;
 
     await showDialog(
       context: context,
@@ -326,9 +327,22 @@ class _TeacherSectionManageScreenState extends State<TeacherSectionManageScreen>
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              DropdownMenu(
                 controller: nameController,
-                decoration: InputDecoration(labelText: 'Group Name'),
+                leadingIcon: Icon(
+                        Constants.groupNameIconStringMap[nameController.text] ?? Icons.exit_to_app,
+                      ),
+                dropdownMenuEntries: Constants.groupNameIconStringMap.keys
+                          .map<DropdownMenuEntry>((iconName) {
+                        return DropdownMenuEntry<String>(
+                            label: iconName,
+                            value: iconName,
+                            leadingIcon:
+                                Icon(Constants.groupNameIconStringMap[iconName]));
+                      }).toList(),
+                      onSelected: (value) {
+                        nameController.text = value;
+                      }
               ),
             ],
           ),
