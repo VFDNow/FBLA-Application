@@ -1186,9 +1186,9 @@ class SimpleLineChart extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(DateFormat('M/d').format(firstDate), 
+                  Text('1',//DateFormat('M/d').format(firstDate), 
                       style: TextStyle(fontSize: 10)),
-                  Text(DateFormat('M/d').format(lastDate), 
+                  Text(dataPoints.length.toString(),//('M/d').format(lastDate), 
                       style: TextStyle(fontSize: 10)),
                 ],
               ),
@@ -1230,12 +1230,13 @@ class ChartPainter extends CustomPainter {
     }
     
     List<Offset> points = [];
-    for (var point in dataPoints) {
-      final dayDiff = point.date.difference(minDate).inDays;
+    for (var point in dataPoints.indexed) {
+      final dayDiff = point.$2.date.difference(minDate).inDays;
       final totalDays = maxDate.difference(minDate).inDays + 1;
-      final x = (dayDiff / totalDays) * size.width;
-      final y = size.height - ((point.score / 100) * size.height);
-      points.add(Offset(x, y));
+      //final x = (dayDiff / totalDays) * size.width;
+      final x = (dataPoints.length > 1) ? point.$1 / (dataPoints.length - 1) * size.width : 0;
+      final y = size.height - ((point.$2.score / 100) * size.height);
+      points.add(Offset(x.toDouble(), y));
     }
     
     for (int i = 0; i < points.length - 1; i++) {

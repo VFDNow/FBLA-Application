@@ -26,10 +26,23 @@ class ClassHome extends StatefulWidget {
   _ClassHomeState createState() => _ClassHomeState();
 }
 
-class _ClassHomeState extends State<ClassHome> {
+class _ClassHomeState extends State<ClassHome> with SingleTickerProviderStateMixin {
   Map<String, dynamic>? classData;
   List<Map<String, dynamic>>? userQuizHistory;
   bool isLoading = false;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   Future<Map<String, dynamic>> getQuizData(String quizName) async {
     var storageRef = FirebaseStorage.instance.ref();
@@ -146,114 +159,6 @@ class _ClassHomeState extends State<ClassHome> {
       return scoreB.compareTo(scoreA);
     });
 
-    buildAssignmentWidgets(BuildContext context) {
-      List<Widget> result = [];
-
-      if (userGroup == "None") {
-        result.add(Center(
-          child: Row(
-            children: [
-              Icon(
-                Icons.error,
-                size: 50,
-                color: Colors.amberAccent,
-              ),
-              SizedBox(width: 20),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("You are not in any group!",
-                      style: Theme.of(context).textTheme.headlineMedium),
-                  Text(
-                      "Ask your teacher to assign you to a group to access assignments.",
-                      style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              ),
-            ],
-          ),
-        ));
-        return result;
-      }
-
-      for (var assignment in classData?["assignments"] ?? []) {
-        AssignmentState assignmentState = AssignmentState.notStarted;
-
-        if ((assignment["dueDate"] as Timestamp).compareTo(Timestamp.now()) <
-            0) {
-          assignmentState = AssignmentState.missed;
-        }
-
-        Map<String, dynamic>? historyRef;
-
-        if (userQuizHistory != null) {
-          for (var history in userQuizHistory!) {
-            if (history["assignmentId"] == assignment["assignmentId"]) {
-              assignmentState = AssignmentState.completed;
-              historyRef = history;
-            }
-          }
-        }
-
-        result.add(AssignmentCard(
-          assignmentName: assignment["assignmentName"],
-          dueDate: (assignment["dueDate"] as Timestamp).toDate(),
-          assignmentState: assignmentState,
-          results:
-              historyRef != null ? historyRef["results"] as List<dynamic> : [],
-          onTap: () {
-            // Capture assignment details before async operations
-            final String quizPath = assignment["quizPath"] ?? "notHere";
-            final String assignmentId = assignment["assignmentId"];
-            
-            setState(() {
-              isLoading = true;
-            });
-            
-            getQuizData(quizPath).then((value) {
-              // Check if widget is still in tree before updating state
-              if (!mounted) return;
-              
-              setState(() {
-                isLoading = false;
-              });
-              
-              Navigator.pushNamed(context, Constants.quizRoute,
-                  arguments: QuizScreenArgs(
-                      quiz: value, quizId: assignmentId)
-              ).then((value) {
-                // Check if widget is still in tree before updating state
-                if (!mounted) return;
-                
-                setState(() {
-                  userQuizHistory = null;
-                });
-              });
-            }).onError((error, stackTrace) {
-              // Check if widget is still in tree before updating state
-              if (!mounted) return;
-              
-              setState(() {
-                isLoading = false;
-              });
-              
-              // Pre-capture the context-dependent objects
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              final errorColor = Theme.of(context).colorScheme.error;
-              
-              scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text("Error loading quiz."),
-                    backgroundColor: errorColor
-                  )
-              );
-            });
-          },
-        ));
-      }
-      return result;
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text((classData?["className"] ?? "Error") + " Home"),
@@ -263,8 +168,8 @@ class _ClassHomeState extends State<ClassHome> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            // Class header section
             Container(
-              // padding: const EdgeInsets.all(16),
               width: double.infinity,
               height: 200,
               color: Theme.of(context).colorScheme.primary,
@@ -304,6 +209,8 @@ class _ClassHomeState extends State<ClassHome> {
                 ),
               ),
             ),
+            
+            // Group information section
             (userGroup == "None")
                 ? Container(
                     width: double.infinity,
@@ -345,7 +252,6 @@ class _ClassHomeState extends State<ClassHome> {
                 : Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                      // padding: const EdgeInsets.all(16),
                       width: double.infinity,
                       height: 250,
                       color: Theme.of(context).colorScheme.secondary,
@@ -388,8 +294,7 @@ class _ClassHomeState extends State<ClassHome> {
                                           horizontal: 16, vertical: 10),
                                     ),
                                     child: SizedBox(
-                                      width:
-                                          100, // Set a fixed width for the button content
+                                      width: 100,
                                       child: Row(
                                         children: [
                                           Icon(Icons.share),
@@ -420,7 +325,6 @@ class _ClassHomeState extends State<ClassHome> {
                                                 .onPrimary),
                                   ),
                                   SizedBox(
-                                    // height: 150,
                                     width: 250,
                                     child: ListView.builder(
                                       shrinkWrap: true,
@@ -446,82 +350,200 @@ class _ClassHomeState extends State<ClassHome> {
                       ),
                     ),
                 ),
-            SizedBox(
-                height: 400,
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Text("Class Standings",
-                          style: Theme.of(context).textTheme.headlineMedium),
-                      Divider(),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: groupStandings.length,
-                          itemBuilder: (context, index) {
-                            String current =
-                                groupStandings[index]; // Use the sorted list
-                            return ListTile(
-                              leading: Icon(
-                                  Constants.groupNameIconStringMap[current] ??
-                                      Icons.error),
-                              title: Text(current),
-                              // Use the actual score from the data instead of index * 10
-                              subtitle: Text("#${index + 1}"),
-                              trailing: Container(
-                                width: 150,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.star,
-                                      color: Colors.amber,
-                                      size: 30,
-                                    ),
-                                    Card(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primaryContainer,
-                                        child: SizedBox(
-                                          width: 100,
-                                          height: 50,
-                                          child: Center(
-                                            child: Text(
-                                              "${groups[current]?["score"] ?? 0}",
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headlineSmall,
-                                            ),
-                                          ),
-                                        )),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                
+            // Tab Bar for Standings and Assignments
+            Container(
+              child: Column(
+                children: [
+                  TabBar(
+                    controller: _tabController,
+                    tabs: [
+                      Tab(
+                        icon: Icon(Icons.leaderboard),
+                        text: "Class Standings",
+                      ),
+                      Tab(
+                        icon: Icon(Icons.assignment),
+                        text: "Assignments",
                       ),
                     ],
                   ),
-                )),
-            Text("Assignments",
-                style: Theme.of(context).textTheme.headlineMedium),
-            Divider(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [...buildAssignmentWidgets(context)],
-                  )),
+                  Container(
+                    height: 500, // Fixed height for tab content
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        // Class Standings Tab
+                        _buildStandingsTab(groupStandings, groups, context),
+                        
+                        // Assignments Tab
+                        _buildAssignmentsTab(userGroup, context),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(
-              height: 100,
-            )
+            SizedBox(height: 100)
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStandingsTab(List<String> groupStandings, Map<String, dynamic> groups, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: groupStandings.length,
+              itemBuilder: (context, index) {
+                String current = groupStandings[index];
+                return ListTile(
+                  leading: Icon(Constants.groupNameIconStringMap[current] ?? Icons.error),
+                  title: Text(current),
+                  subtitle: Text("#${index + 1}"),
+                  trailing: Container(
+                    width: 150,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.star, color: Colors.amber, size: 30),
+                        Card(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          child: SizedBox(
+                            width: 100,
+                            height: 50,
+                            child: Center(
+                              child: Text(
+                                "${groups[current]?["score"] ?? 0}",
+                                style: Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ),
+                          )
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssignmentsTab(String userGroup, BuildContext context) {
+    List<Widget> assignmentWidgets = [];
+
+    if (userGroup == "None") {
+      assignmentWidgets.add(Center(
+        child: Row(
+          children: [
+            Icon(Icons.error, size: 50, color: Colors.amberAccent),
+            SizedBox(width: 20),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("You are not in any group!",
+                    style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                    "Ask your teacher to assign you to a group to access assignments.",
+                    style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ],
+        ),
+      ));
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: assignmentWidgets,
+        ),
+      );
+    }
+
+    for (var assignment in classData?["assignments"] ?? []) {
+      AssignmentState assignmentState = AssignmentState.notStarted;
+
+      if ((assignment["dueDate"] as Timestamp).compareTo(Timestamp.now()) < 0) {
+        assignmentState = AssignmentState.missed;
+      }
+
+      Map<String, dynamic>? historyRef;
+
+      if (userQuizHistory != null) {
+        for (var history in userQuizHistory!) {
+          if (history["assignmentId"] == assignment["assignmentId"]) {
+            assignmentState = AssignmentState.completed;
+            historyRef = history;
+          }
+        }
+      }
+
+      assignmentWidgets.add(AssignmentCard(
+        assignmentName: assignment["assignmentName"],
+        dueDate: (assignment["dueDate"] as Timestamp).toDate(),
+        assignmentState: assignmentState,
+        results: historyRef != null ? historyRef["results"] as List<dynamic> : [],
+        onTap: () {
+          final String quizPath = assignment["quizPath"] ?? "notHere";
+          final String assignmentId = assignment["assignmentId"];
+          
+          setState(() {
+            isLoading = true;
+          });
+          
+          getQuizData(quizPath).then((value) {
+            if (!mounted) return;
+            
+            setState(() {
+              isLoading = false;
+            });
+            
+            Navigator.pushNamed(context, Constants.quizRoute,
+                arguments: QuizScreenArgs(quiz: value, quizId: assignmentId)
+            ).then((value) {
+              if (!mounted) return;
+              
+              setState(() {
+                userQuizHistory = null;
+              });
+            });
+          }).onError((error, stackTrace) {
+            if (!mounted) return;
+            
+            setState(() {
+              isLoading = false;
+            });
+            
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
+            final errorColor = Theme.of(context).colorScheme.error;
+            
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text("Error loading quiz."),
+                backgroundColor: errorColor
+              )
+            );
+          });
+        },
+      ));
+    }
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.start,
+          children: assignmentWidgets,
         ),
       ),
     );
