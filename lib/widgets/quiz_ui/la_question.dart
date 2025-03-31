@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fbla_application/screens/quiz_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -60,7 +61,7 @@ class _LaQuestionState extends State<LaQuestion> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
-                    child: Text(questionBody ?? 'Question Body',
+                    child: AutoSizeText(questionBody ?? 'Question Body',
                         style: Theme.of(context).textTheme.headlineLarge),
                   ),
                 ),
@@ -75,7 +76,8 @@ class _LaQuestionState extends State<LaQuestion> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Expanded(
+                            child: SizedBox(
+                              height: 150,
                               child: TextField(
                                 controller: _controller, // Use the controller
                                 maxLines: 5,

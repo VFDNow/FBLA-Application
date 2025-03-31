@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:fbla_application/widgets/quiz_ui/quiz_answer.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ class _TFQuestionState extends State<TfQuestion> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
-                    child: Text(questionBody ?? 'Question Body',
+                    child: AutoSizeText(questionBody ?? 'Question Body',
                         style: Theme.of(context).textTheme.headlineLarge),
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fbla_application/utils/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ class _QuizAnswerState extends State<QuizAnswer> {
                   ),
                   Expanded(
                     child: Center(
-                      child: Text(
+                      child: AutoSizeText(
                         widget.body,
                         style: widget.textStyle ??
                             Theme.of(context).textTheme.titleLarge?.copyWith(
